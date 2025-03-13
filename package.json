@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm install & npx tsc",
+    "build": "npm install && npm run compile",
+    "compile": "npx tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts"
   },
