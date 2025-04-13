@@ -1,0 +1,91 @@
+import { ObjectId } from "mongodb";
+import { UserModel } from "../schemas/users";
+import { CustomError } from "../utility/CustomError";
+import { generateToken } from "../utility/GeneralFunctions";
+import { ErrorMessages } from "../variables/errorCodes";
+import type { LoginPayload, RegisterPayload } from "../variables/types";
+import bcrypt from "bcryptjs";
+
+export class AuthService {
+
+    private constructor() {} 
+
+    static async checkUniqueValue(target: string, value: string | number){ 
+        return UserModel.findOne({ [target]: value }, { [target]: 1 });
+    }
+
+    static generateEncryptedPassword(password: string){
+        const salt =  bcrypt.genSaltSync(5)
+        return bcrypt.hashSync(password, salt)
+    }
+
+    static comparePassword(existPassword: string, currentPassword: string){
+        return bcrypt.compareSync(currentPassword, existPassword)
+    }
+
+    static async register(payload: RegisterPayload){
+        const checkUsername = await AuthService.checkUniqueValue('username', payload.username)
+        if(checkUsername){
+            throw new CustomError(ErrorMessages.UsernameExistsError)
+        }
+
+        const checkEmail = await AuthService.checkUniqueValue('email', payload.email)
+        if(checkEmail){
+            throw new CustomError(ErrorMessages.EmailExistsError)
+        }
+
+        const checkPhoneNumber = await AuthService.checkUniqueValue('phoneNumber', payload.phoneNumber)
+        if(checkPhoneNumber){
+            throw new CustomError(ErrorMessages.PhoneNumberExistsError)
+        }
+
+        if(payload.password !== payload.confirmPassword){
+            throw new CustomError(ErrorMessages.PasswordMismatchError)
+        }
+
+        const generatedPassword = AuthService.generateEncryptedPassword(payload.password)
+        console.log("generatedPassword: ", generatedPassword)
+
+        const { confirmPassword, ...newPayload } = payload        
+        newPayload.password = generatedPassword
+
+        console.log("payload: ", payload)
+
+        const result = await UserModel.create(newPayload)
+        console.log("result: ", result)
+
+        return true
+    }
+
+    static async login(payload: LoginPayload){
+        const { username, password } = payload
+
+        let usernameFilter: { $or: [{ username: string }, { email: string }] } | { phoneNumber: number };
+        if (typeof username === 'string') {
+            usernameFilter = { $or: [{ username: username }, { email: username }] };
+        } else {
+            usernameFilter = { phoneNumber: username };
+        }
+
+        const user = await UserModel.findOne<{ password: string, _id: ObjectId }>(usernameFilter, { password: 1, _id: 1 }).read('secondaryPreferred')
+        if(!user){
+            throw new CustomError(ErrorMessages.UsernameOrPasswordError)
+        }
+
+        const isPasswordValid = AuthService.comparePassword(user.password, password)
+        if(!isPasswordValid){
+            throw new CustomError(ErrorMessages.UsernameOrPasswordError)
+        }
+
+        return generateToken(user._id)
+    }
+
+    static async getProfile(userId: ObjectId){
+        const user = await UserModel.findById(userId, { _id: 0, password: 0, __v: 0 })
+        if(!user){
+            throw new CustomError(ErrorMessages.NotFound)
+        }
+
+        return user
+    }
+};
