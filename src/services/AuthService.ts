@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import type { ObjectId } from "mongodb";
 import { UserModel } from "../schemas/users";
 import { CustomError } from "../utility/CustomError";
 import { generateToken } from "../utility/GeneralFunctions";
@@ -44,17 +44,13 @@ export class AuthService {
         }
 
         const generatedPassword = AuthService.generateEncryptedPassword(payload.password)
-        console.log("generatedPassword: ", generatedPassword)
 
         const { confirmPassword, ...newPayload } = payload        
         newPayload.password = generatedPassword
 
-        console.log("payload: ", payload)
-
         const result = await UserModel.create(newPayload)
-        console.log("result: ", result)
 
-        return true
+        return generateToken(result._id)
     }
 
     static async login(payload: LoginPayload){

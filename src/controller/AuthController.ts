@@ -6,8 +6,8 @@ import { LoginSchema, RegisterSchema } from '../variables/ValidationSchemas';
 export async function register (req: Request, res: Response, next: NextFunction) {
     try {
         const filterData = validateParameter(req, RegisterSchema)
-        await AuthService.register(filterData)
-        res.status(201).json({ message: "User registered successfully" });
+        const token = await AuthService.register(filterData)
+        res.status(201).json({ token });
         return
     } catch (error) {
         next(error)

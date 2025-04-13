@@ -8,7 +8,7 @@ import { ErrorMessages } from "./variables/errorCodes";
 import { CustomError } from "./utility/CustomError";
 import { DbConnection } from "./config/dbconnection";
 import AuthRoute from "./routes/AuthRoutes";
-import { ObjectId } from "mongodb";
+import type{ ObjectId } from "mongodb";
 
 const app: Express = express();
 app.use(express.json()); 

@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import type { ObjectId } from "mongodb";
 import type { NonEmpty } from "../variables/types";
 import jwt from "jsonwebtoken";
 import { CustomError } from "./CustomError";
