@@ -3,6 +3,7 @@ import type { NonEmpty } from "../variables/types";
 import jwt from "jsonwebtoken";
 import { CustomError } from "./CustomError";
 import { ErrorMessages } from "../variables/errorCodes";
+import { clientInstance } from "../config/RedisConnection";
 
 export function isEmpty<PayloadType>(payload: PayloadType): payload is Exclude<PayloadType, NonEmpty<PayloadType>> {
     if (payload === undefined || payload === null) {
@@ -38,4 +39,37 @@ export const verifyToken = (token: string) => {
     }
 
     return jwt.verify(token, process.env.TOKEN_SECRET) as { userId: string };
+}
+
+export const getOrSetCache = async <T> (key: string, ttl: number, dbQuery: () => Promise<T | null>) => {
+    const getCachedData = await getCacheData(key);
+    if(isEmpty(getCachedData)){
+        return setCacheData(key, ttl, dbQuery)
+    }
+
+    return getCachedData
+}
+
+export const getCacheData = async <T> (key: string) => {
+    if(clientInstance){
+        const cachedData = await clientInstance.get(key);
+        if (!isEmpty(cachedData)) {
+            return JSON.parse(cachedData) as T;
+          }
+    }
+
+    return null
+}
+
+export const setCacheData = async <T> (key: string, ttl: number, dbQuery: () => Promise<T | null>) => {
+    const data = await dbQuery();
+    if (!data) {
+        throw new CustomError(ErrorMessages.NotFound);
+    }
+
+    if (clientInstance) {
+        await clientInstance.set(key, JSON.stringify(data), { EX: ttl });
+    }
+
+    return data;
 }

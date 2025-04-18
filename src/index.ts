@@ -9,6 +9,7 @@ import { CustomError } from "./utility/CustomError";
 import { DbConnection } from "./config/dbconnection";
 import AuthRoute from "./routes/AuthRoutes";
 import type{ ObjectId } from "mongodb";
+import { RedisClient } from "./config/RedisConnection";
 
 const app: Express = express();
 app.use(express.json()); 
@@ -16,6 +17,8 @@ const port = process.env.PORT || 3000;
 
 const dbInstance = new DbConnection();
 dbInstance.connectDB();
+
+RedisClient()
 
 declare module "express-serve-static-core" {
   interface Request {
