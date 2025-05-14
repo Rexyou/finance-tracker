@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AccountStatus, AccountType } from "./Enums";
 
 // Standard sharing validation
 const usernameValidator = z.string().min(8).max(16).regex(/^[a-zA-Z0-9]+$/);
@@ -42,4 +43,28 @@ export const LoginSchema = z.object({
         message: 'Must be a valid username, email, or phone number',
       }),
     password: z.string().min(8).max(16).nonempty(),
+})
+
+export const CreateAccountSchema = z.object({
+  type: z.nativeEnum(AccountType),
+  balance: z.number().optional(),
+  accountNumber: z.number().refine((num) => {
+    const str = num.toString();
+    return str.length >= 6 && str.length <= 20;
+  }, {
+    message: 'Phone number must be between 6 and 20 digits',
+  }),
+})
+
+export const UpdateAccountSchema = z.object({
+  accountId: z.string().nonempty(),
+  type: z.nativeEnum(AccountType).optional(),
+  balance: z.number().optional(),
+  accountNumber: z.number().refine((num) => {
+    const str = num.toString();
+    return str.length >= 6 && str.length <= 20;
+  }, {
+    message: 'Phone number must be between 6 and 20 digits',
+  }).optional(),
+  status: z.nativeEnum(AccountStatus).optional(),
 })

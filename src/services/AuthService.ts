@@ -1,11 +1,10 @@
 import type { ObjectId } from "mongodb";
-import { UserDocument, UserModel } from "../schemas/users";
+import { type UserDocument, UserModel } from "../schemas/users";
 import { CustomError } from "../utility/CustomError";
 import { generateToken, getOrSetCache, isEmpty } from "../utility/GeneralFunctions";
 import { ErrorMessages } from "../variables/errorCodes";
 import type { LoginPayload, RegisterPayload } from "../variables/types";
 import bcrypt from "bcryptjs";
-import { clientInstance, RedisClient } from "../config/RedisConnection";
 import { RedisKeyName } from "../variables/Enums";
 
 export class AuthService {
@@ -79,7 +78,7 @@ export class AuthService {
     }
 
     static async getProfile(userId: ObjectId){
-        return await getOrSetCache(`${RedisKeyName.UserData}:${userId}`, 60 * 60 * 24, ()=> UserModel.findById(userId, { _id: 0, password: 0, __v: 0 }))
+        return await getOrSetCache(`${RedisKeyName.UserData}:${userId}`, 60 * 60 * 24, ()=> UserModel.findById(userId, { password: 0, __v: 0 })) as UserDocument
     }
       
 };

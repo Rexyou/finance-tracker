@@ -10,6 +10,7 @@ import { DbConnection } from "./config/dbconnection";
 import AuthRoute from "./routes/AuthRoutes";
 import type{ ObjectId } from "mongodb";
 import { RedisClient } from "./config/RedisConnection";
+import AccountRoute from "./routes/AcoountRoutes";
 
 const app: Express = express();
 app.use(express.json()); 
@@ -31,6 +32,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use('/auth', AuthRoute)
+app.use('/account', AccountRoute)
 
 app.get("*", (req, res, next) => {
   throw new CustomError(ErrorMessages.NotFound);

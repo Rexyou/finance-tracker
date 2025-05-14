@@ -1,4 +1,5 @@
 import { type HydratedDocument, type InferSchemaType, model, Schema } from "mongoose";
+import { UserStatus } from "../variables/Enums";
 
 const userSchema = new Schema({
     username: { type: String, required: true, unique: true },
@@ -10,7 +11,11 @@ const userSchema = new Schema({
     countryCode: { type: Number, required: true },
     phoneNumber: { type: Number, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    status: { type: String, default: "inactive" },
+    status: {
+        type: String,
+        enum: Object.values(UserStatus),
+        default: UserStatus.Inactive,
+    },
     loginAttempts: { type: Number, default: 0 },
     lastLoginAt: { type: Date }
 }, {
