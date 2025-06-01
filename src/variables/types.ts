@@ -1,5 +1,5 @@
 import type { ObjectId } from "mongodb";
-import type { AccountStatus, AccountType } from "./Enums";
+import type { AccountStatus, AccountType, TransactionLabelStatus, TransactionType } from "./Enums";
 
 export type UserPayload = {
     username: string;
@@ -39,3 +39,39 @@ export type AccountUpdatePayload = {
 export type VerifyAccount = Omit<AccountPayload, 'balance'> & {
     userId: ObjectId;
 };
+
+export interface TransactionLabelPayload {
+    labelName: string;
+    labelColor?: string;
+}
+
+export type VerifyLabel = Omit<TransactionLabelPayload, 'labelColor'> & {
+    userId: ObjectId
+}
+
+export interface TransactionLabelUpdatePayload {
+    labelName?: string;
+    labelColor?: string;
+    status?: TransactionLabelStatus
+}
+
+export interface TransactionLabelPayload {
+    labelName: string;
+    labelColor?: string;
+}
+
+export interface TransactionPayload {
+    transactionType: TransactionType;
+    accountId: ObjectId;
+    transactionLabelId: ObjectId;
+    amount: number;
+    remarks?: string
+}
+
+export interface TransactionUpdatePayload {
+    transactionType?: TransactionType;
+    accountId?: ObjectId;
+    transactionLabelId?: ObjectId;
+    amount?: number;
+    remarks?: string
+}

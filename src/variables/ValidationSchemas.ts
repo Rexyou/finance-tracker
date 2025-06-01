@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { AccountStatus, AccountType } from "./Enums";
+import { AccountStatus, AccountType, TransactionLabelStatus, TransactionType } from "./Enums";
+import mongoose from "mongoose";
 
 // Standard sharing validation
 const usernameValidator = z.string().min(8).max(16).regex(/^[a-zA-Z0-9]+$/);
@@ -10,6 +11,10 @@ const phoneNumberValidator = z.number().refine((num) => {
   }, {
     message: 'Phone number must be between 4 and 16 digits',
   });
+
+const objectIdSchema = z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+  message: 'Invalid ObjectId',
+});
 
 export const RegisterSchema = z.object({
     username: usernameValidator.nonempty(),
@@ -67,4 +72,35 @@ export const UpdateAccountSchema = z.object({
     message: 'Phone number must be between 6 and 20 digits',
   }).optional(),
   status: z.nativeEnum(AccountStatus).optional(),
+})
+
+const hexColorRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
+
+export const CreateTransactionLabelSchema = z.object({
+  labelName: z.string().nonempty(),
+  labelColor: z.string().regex(hexColorRegex).optional(),
+})
+
+export const UpdateTransactionLabelSchema = z.object({
+  transactionLabelId: z.string().nonempty(),
+  labelName: z.string().nonempty().optional(),
+  labelColor: z.string().regex(hexColorRegex).optional(),
+  status: z.nativeEnum(TransactionLabelStatus).optional(),
+})
+
+export const CreateTransactionSchema = z.object({
+  transactionType: z.nativeEnum(TransactionType),
+  accountId: objectIdSchema,
+  transactionLabelId: objectIdSchema,
+  amount: z.number().min(1),
+  remarks: z.string().optional()
+})
+
+export const UpdateTransactionSchema = z.object({
+  transactionId: objectIdSchema.optional(),
+  transactionType: z.nativeEnum(TransactionType).optional(),
+  transactionLabelId: objectIdSchema.optional(),
+  accountId: objectIdSchema.optional(),
+  amount: z.number().min(1).optional(),
+  remarks: z.string().optional()
 })

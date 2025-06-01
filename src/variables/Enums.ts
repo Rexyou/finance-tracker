@@ -21,3 +21,23 @@ export enum AccountStatus {
     Inactive = "inactive",
     Delete = "delete",
 }
+
+export enum TransactionType {
+    Credit = "credit",
+    Debit = "debit",
+}
+
+export enum TransactionLabel {
+    Saving = "saving",
+    Meal = "meal",
+    Utility = "utility",
+    Entertainment = "entertainment",
+    Investment = "investment",
+    Installment = "installment",
+}
+
+export enum TransactionLabelStatus {
+    Active = "active",
+    Inactive = "inactive",
+    Delete = "delete",
+}

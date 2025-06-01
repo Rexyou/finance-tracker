@@ -19,10 +19,10 @@ export const RedisClient = async () => {
 
     await client.connect();
     if(client.isOpen) {
-        console.log("Redis client connected successfully.");
+        console.log("[Redis]: Client connected successfully.");
     }
     else {
-        console.log("Redis client connection failed.");
+        console.log("[Redis]: Client connection failed.");
         throw new CustomError(ErrorMessages.UnknownError)
     }
 

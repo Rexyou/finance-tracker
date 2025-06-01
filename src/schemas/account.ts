@@ -18,8 +18,4 @@ accountSchema.plugin(mongooseLeanGetters);
 export type AccountSchema = InferSchemaType<typeof accountSchema>;
 export type AccountDocument = HydratedDocument<AccountSchema>;
 
-accountSchema.virtual("balanceNumber").get(function (this: AccountDocument) {
-  return this.balance ? Number(this.balance.toString()) : 0;
-});
-
 export const AccountModel = model("Account", accountSchema);

@@ -11,6 +11,8 @@ import AuthRoute from "./routes/AuthRoutes";
 import type{ ObjectId } from "mongodb";
 import { RedisClient } from "./config/RedisConnection";
 import AccountRoute from "./routes/AcoountRoutes";
+import TransactionLabelRoute from "./routes/TransactionLabelRoutes";
+import TransactionRoute from "./routes/TransactionRoutes";
 
 const app: Express = express();
 app.use(express.json()); 
@@ -33,6 +35,8 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use('/auth', AuthRoute)
 app.use('/account', AccountRoute)
+app.use('/transactionLabel', TransactionLabelRoute)
+app.use('/transaction', TransactionRoute)
 
 app.get("*", (req, res, next) => {
   throw new CustomError(ErrorMessages.NotFound);
@@ -41,6 +45,6 @@ app.get("*", (req, res, next) => {
 app.use(errorHandler)
 
 app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+  console.log(`[Server]: Running at http://localhost:${port}`);
 });
 

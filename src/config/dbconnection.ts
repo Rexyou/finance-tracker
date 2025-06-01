@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 import { CustomError } from "../utility/CustomError";
 import { ErrorMessages } from "../variables/errorCodes";
+import { AccountModel } from "../schemas/account";
+import { TransactionLabelModel } from "../schemas/transactionLabel";
+import { TransactionModel } from "../schemas/transaction";
+import { UserModel } from "../schemas/users";
 
 
 export class DbConnection {
@@ -15,10 +19,20 @@ export class DbConnection {
     public async connectDB() {
         try {
             await mongoose.connect(DbConnection.connectionString);
-            console.log("DB connection ok.")
+            console.log("[Mongo]: Connection ok.")
+            await this.syncIndex()
         } catch (error) {
-            console.log("DB connection error.")
+            console.log("[Mongo]: connection error.")
             throw new CustomError(ErrorMessages.UnknownError)
         }
+    }
+
+    private async syncIndex(){
+        await Promise.all([
+            UserModel.syncIndexes(),
+            AccountModel.syncIndexes(),
+            TransactionLabelModel.syncIndexes(),
+            TransactionModel.syncIndexes()
+        ])
     }
 }

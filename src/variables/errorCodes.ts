@@ -20,4 +20,5 @@ export const ErrorMessages = {
     UsernameOrPasswordError: { code: HttpCode.NOT_FOUND, message: "username_or_password_error" },
     TokenInvalidError: { code: HttpCode.UNAUTHORIZED, message: "token_invalid" },
     AccountExistsError: { code: HttpCode.VALIDATION_ERROR, message: "account_exists" },
+    LabelExistsError: { code: HttpCode.VALIDATION_ERROR, message: "label_exists" },
 }
