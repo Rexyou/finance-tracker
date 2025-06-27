@@ -13,8 +13,10 @@ import { RedisClient } from "./config/RedisConnection";
 import AccountRoute from "./routes/AcoountRoutes";
 import TransactionLabelRoute from "./routes/TransactionLabelRoutes";
 import TransactionRoute from "./routes/TransactionRoutes";
+import cors from 'cors'
 
 const app: Express = express();
+app.use(cors())
 app.use(express.json()); 
 const port = process.env.PORT || 3000;
 
