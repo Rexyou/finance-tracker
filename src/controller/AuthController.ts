@@ -6,8 +6,8 @@ import { LoginSchema, RegisterSchema } from '../variables/ValidationSchemas';
 export async function register (req: Request, res: Response, next: NextFunction) {
     try {
         const filterData = validateParameter(req, RegisterSchema)
-        const token = await AuthService.register(filterData)
-        res.status(201).json({ token });
+        const userData = await AuthService.register(filterData)
+        res.status(201).json(userData);
         return
     } catch (error) {
         next(error)
@@ -17,8 +17,8 @@ export async function register (req: Request, res: Response, next: NextFunction)
 export async function login (req: Request, res: Response, next: NextFunction) {
     try {
         const filterData = validateParameter(req, LoginSchema)
-        const token = await AuthService.login(filterData)
-        res.status(201).json({ token });
+        const userData = await AuthService.login(filterData)
+        res.status(201).json(userData);
         return
     } catch (error) {
         next(error)

@@ -50,8 +50,9 @@ export class AuthService {
         newPayload.password = generatedPassword
 
         const result = await UserModel.create(newPayload)
+        const profileData = await AuthService.getProfile(result._id)
 
-        return generateToken(result._id)
+        return { token: generateToken(result._id), ...profileData }
     }
 
     static async login(payload: LoginPayload){
@@ -74,11 +75,13 @@ export class AuthService {
             throw new CustomError(ErrorMessages.UsernameOrPasswordError)
         }
 
-        return generateToken(user._id)
+        const profileData = await AuthService.getProfile(user._id)
+
+        return { token: generateToken(user._id), ...profileData }
     }
 
     static async getProfile(userId: ObjectId){
-        return await getOrSetCache(`${RedisKeyName.UserData}:${userId}`, 60 * 60 * 24, ()=> UserModel.findById(userId, { password: 0, __v: 0 })) as UserDocument
+        return await getOrSetCache(`${RedisKeyName.UserData}:${userId}`, 60 * 60 * 24, ()=> UserModel.findById(userId, { password: 0, __v: 0 }).lean()) as UserDocument
     }
       
 };
