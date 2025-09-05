@@ -52,24 +52,39 @@ export const LoginSchema = z.object({
 
 export const CreateAccountSchema = z.object({
   type: z.nativeEnum(AccountType),
-  balance: z.number().optional(),
   accountNumber: z.number().refine((num) => {
     const str = num.toString();
     return str.length >= 6 && str.length <= 20;
   }, {
-    message: 'Phone number must be between 6 and 20 digits',
+    message: "Account number must be between 6 and 20 digits",
   }),
-})
+  limit: z.number().optional(),
+}).superRefine((data, ctx) => {
+  if (data.type === AccountType.CreditAccount) {
+    if (data.limit === undefined) {
+      ctx.addIssue({
+        path: ["limit"],
+        code: "custom",
+        message: "Limit is required for credit accounts",
+      });
+    } else if (data.limit <= 0) {
+      ctx.addIssue({
+        path: ["limit"],
+        code: "custom",
+        message: "Limit must be greater than 0",
+      });
+    }
+  }
+});
 
 export const UpdateAccountSchema = z.object({
   accountId: z.string().nonempty(),
   type: z.nativeEnum(AccountType).optional(),
-  balance: z.number().optional(),
   accountNumber: z.number().refine((num) => {
     const str = num.toString();
     return str.length >= 6 && str.length <= 20;
   }, {
-    message: 'Phone number must be between 6 and 20 digits',
+    message: 'Account number must be between 6 and 20 digits',
   }).optional(),
   status: z.nativeEnum(AccountStatus).optional(),
 })

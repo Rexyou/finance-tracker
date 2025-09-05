@@ -1,21 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
 import { validateParameter } from "../utility/Validation";
-import { AuthService } from "../services/AuthService";
-import { isEmpty } from "../utility/GeneralFunctions";
-import { CustomError } from "../utility/CustomError";
 import { CreateTransactionSchema, UpdateTransactionSchema } from "../variables/ValidationSchemas";
-import { ErrorMessages, HttpCode } from "../variables/errorCodes";
+import { HttpCode } from "../variables/errorCodes";
 import { ObjectId } from "mongodb";
 import { TransactionService } from "../services/TransactionService";
 
 export const createTransaction= async (req: Request, res: Response, next: NextFunction) => {
     try {
         const filterData = validateParameter(req, CreateTransactionSchema)
-        const getProfile = await AuthService.getProfile(req.userId)
-        if(isEmpty(getProfile)){
-            throw new CustomError(ErrorMessages.NotFound)
-        }
-
         // Convert string IDs to ObjectId
         const payload = {
             ...filterData,
@@ -23,7 +15,7 @@ export const createTransaction= async (req: Request, res: Response, next: NextFu
             transactionLabelId: new ObjectId(filterData.transactionLabelId),
         };
 
-        const transactionService = new TransactionService(getProfile)
+        const transactionService = new TransactionService(req.userData)
         const result = await transactionService.createTransaction(payload)
         res.status(HttpCode.CREATED).json(result);
         return
@@ -34,13 +26,8 @@ export const createTransaction= async (req: Request, res: Response, next: NextFu
 
 export const getTransaction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const getProfile = await AuthService.getProfile(req.userId)
-        if(isEmpty(getProfile)){
-            throw new CustomError(ErrorMessages.NotFound)
-        }
-
-        const transactionService = new TransactionService(getProfile)
-        const result = await transactionService.getTransaction()
+        const transactionService = new TransactionService(req.userData)
+        const result = await transactionService.getTransaction(req.body)
         res.json(result);
         return
     } catch (error) {
@@ -51,12 +38,7 @@ export const getTransaction = async (req: Request, res: Response, next: NextFunc
 export const editTransaction = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const filterData = validateParameter(req, UpdateTransactionSchema)
-        const getProfile = await AuthService.getProfile(req.userId)
-        if(isEmpty(getProfile)){
-            throw new CustomError(ErrorMessages.NotFound)
-        }
-
-        const transactionService = new TransactionService(getProfile)
+        const transactionService = new TransactionService(req.userData)
         const { transactionId, ...filteredData } = filterData
 
         // Convert string IDs to ObjectId if present

@@ -27,8 +27,7 @@ export async function login (req: Request, res: Response, next: NextFunction) {
 
 export async function getProfile (req: Request, res: Response, next: NextFunction) {
     try {
-        const userProfile = await AuthService.getProfile(req.userId)
-        res.json(userProfile)
+        res.json(req.userData)
         return  
     } catch (error) {
         next(error)

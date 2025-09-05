@@ -11,12 +11,7 @@ import { ObjectId } from "mongodb";
 export const createAccount = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const filterData = validateParameter(req, CreateAccountSchema)
-        const getProfile = await AuthService.getProfile(req.userId)
-        if(isEmpty(getProfile)){
-            throw new CustomError(ErrorMessages.NotFound)
-        }
-
-        const accountService = new AccountService(getProfile)
+        const accountService = new AccountService(req.userData)
         const result = await accountService.createAccount(filterData)
         res.status(HttpCode.CREATED).json(result);
         return
@@ -27,13 +22,8 @@ export const createAccount = async (req: Request, res: Response, next: NextFunct
 
 export const getAccountList = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const getProfile = await AuthService.getProfile(req.userId)
-        if(isEmpty(getProfile)){
-            throw new CustomError(ErrorMessages.NotFound)
-        }
-
-        const accountService = new AccountService(getProfile)
-        const result = await accountService.getAccountList()
+        const accountService = new AccountService(req.userData)
+        const result = await accountService.getAccountList(req.body)
         res.json(result);
         return
     } catch (error) {
@@ -44,12 +34,7 @@ export const getAccountList = async (req: Request, res: Response, next: NextFunc
 export const editAccount = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const filterData = validateParameter(req, UpdateAccountSchema)
-        const getProfile = await AuthService.getProfile(req.userId)
-        if(isEmpty(getProfile)){
-            throw new CustomError(ErrorMessages.NotFound)
-        }
-
-        const accountService = new AccountService(getProfile)
+        const accountService = new AccountService(req.userData)
         const { accountId, ...filteredData } = filterData
         const result = await accountService.editAccount(new ObjectId(accountId), filteredData)
         res.json(result);

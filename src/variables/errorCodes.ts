@@ -20,5 +20,12 @@ export const ErrorMessages = {
     UsernameOrPasswordError: { code: HttpCode.NOT_FOUND, message: "username_or_password_error" },
     TokenInvalidError: { code: HttpCode.UNAUTHORIZED, message: "token_invalid" },
     AccountExistsError: { code: HttpCode.VALIDATION_ERROR, message: "account_exists" },
+    AccountNotFoundError: { code: HttpCode.NOT_FOUND, message: "account_not_found" },
+    AccountNotActiveError: { code: HttpCode.NOT_FOUND, message: "account_not_active" },
     LabelExistsError: { code: HttpCode.VALIDATION_ERROR, message: "label_exists" },
+    TransactionCreationError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "transaction_create_error" },
+    TransactionUpdateError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "transaction_update_error" },
+    BalanceNotEnoughError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "balance_not_enough_error" },
+    LimitNotEnoughError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "limit_not_enough_error" },
+    CreditAccountLimitError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "credit_account_limit_error" }
 }

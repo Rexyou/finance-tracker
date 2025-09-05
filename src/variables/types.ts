@@ -1,5 +1,6 @@
 import type { ObjectId } from "mongodb";
 import type { AccountStatus, AccountType, TransactionLabelStatus, TransactionType } from "./Enums";
+import { PopulateOption } from "mongoose";
 
 export type UserPayload = {
     username: string;
@@ -26,13 +27,13 @@ export type NonEmpty<T> = T extends null | undefined | '' | [] | Record<string, 
 export interface AccountPayload {
     type: AccountType;
     accountNumber: number;
-    balance?: number | undefined;
+    limit?: number | undefined;
 }
 
 export type AccountUpdatePayload = {
     type?: AccountType;
     accountNumber?: number;
-    balance?: number | undefined;
+    limit?: number | undefined;
     status?: AccountStatus;
 }
 
@@ -74,4 +75,23 @@ export interface TransactionUpdatePayload {
     transactionLabelId?: ObjectId;
     amount?: number;
     remarks?: string
+}
+
+export interface PaginationData {
+  page?: number;
+  size?: number;
+  sort?: Record<string, 1 | -1>;
+}
+
+export interface PaginationResult<T> {
+  data: T[];
+  currentPage: number;
+  totalCount: number;
+  totalPage: number;
+}
+
+export interface PaginateOptions {
+  projection?: Record<string, 0 | 1>;
+  populate?: PopulateOption;
+  lean?: boolean;
 }

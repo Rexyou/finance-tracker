@@ -14,6 +14,7 @@ import AccountRoute from "./routes/AcoountRoutes";
 import TransactionLabelRoute from "./routes/TransactionLabelRoutes";
 import TransactionRoute from "./routes/TransactionRoutes";
 import cors from 'cors'
+import { UserDocument } from "./schemas/users";
 
 const app: Express = express();
 app.use(cors())
@@ -27,7 +28,7 @@ RedisClient()
 
 declare module "express-serve-static-core" {
   interface Request {
-    userId: ObjectId;
+    userData: UserDocument;
   }
 }
 

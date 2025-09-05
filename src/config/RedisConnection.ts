@@ -15,7 +15,7 @@ export const RedisClient = async () => {
                 host: process.env.REDIS_SOCKET_HOST,
                 port: Number(process.env.REDIS_SOCKET_PORT),
                 reconnectStrategy: (retries) => {
-                    if (retries > 3) {
+                    if (retries > 1) {
                         console.error('[Redis]: Retry limit reached. Giving up.');
                         return new Error('Retry limit reached');
                     }

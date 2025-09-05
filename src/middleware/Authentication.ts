@@ -1,10 +1,11 @@
 import type { NextFunction, Request, Response } from "express";
 import { CustomError } from "../utility/CustomError";
 import { ErrorMessages } from "../variables/errorCodes";
-import { verifyToken } from "../utility/GeneralFunctions";
+import { isEmpty, verifyToken } from "../utility/GeneralFunctions";
 import { ObjectId } from "mongodb";
+import { AuthService } from "../services/AuthService";
 
-export function Authenticate(req: Request, res: Response, next: NextFunction) {
+export async function Authenticate(req: Request, res: Response, next: NextFunction) {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
         throw new CustomError(ErrorMessages.TokenInvalidError);
@@ -16,10 +17,17 @@ export function Authenticate(req: Request, res: Response, next: NextFunction) {
             throw new CustomError(ErrorMessages.TokenInvalidError);
         }
 
-        req.userId = new ObjectId(decodedData.userId)
-        if(!req.userId){
+        if(isEmpty(decodedData.userId)){
             throw new CustomError(ErrorMessages.TokenInvalidError);
         }
+
+        const getProfile = await AuthService.getProfile(new ObjectId(decodedData.userId))
+        if(isEmpty(getProfile)){
+            throw new CustomError(ErrorMessages.NotFound)
+        }
+
+        req.userData = getProfile
+
         next();
     } catch (error) {
         console.log("token invalid error: ", error)

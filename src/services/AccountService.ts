@@ -1,10 +1,12 @@
 import type { ObjectId } from "mongodb";
-import { AccountModel } from "../schemas/account";
+import { AccountModel, AccountSchema } from "../schemas/account";
 import type { UserDocument } from "../schemas/users";
-import type { AccountPayload, AccountUpdatePayload, VerifyAccount } from "../variables/types";
+import type { AccountPayload, AccountUpdatePayload, PaginationData, VerifyAccount } from "../variables/types";
 import { CustomError } from "../utility/CustomError";
 import { ErrorMessages } from "../variables/errorCodes";
 import { isEmpty } from "../utility/GeneralFunctions";
+import { AccountType } from "../variables/Enums";
+import { paginate } from "./GeneralService";
 
 export class AccountService {
     
@@ -26,6 +28,10 @@ export class AccountService {
             throw new CustomError(ErrorMessages.AccountExistsError)
         }
 
+        if(payload.type === AccountType.CreditAccount && isEmpty(payload.limit)){
+            throw new CustomError(ErrorMessages.CreditAccountLimitError)
+        }
+        
         const result = await AccountModel.create(newPayload)
 
         return { id: result._id, ...payload }
@@ -40,7 +46,11 @@ export class AccountService {
         return await AccountModel.findByIdAndUpdate(accountId, payload, { new: true, projection: { __v: 0 } }).lean({ getters: true })
     }
 
-    async getAccountList(){
-        return AccountModel.find({ userId: this.user._id }, { __v: 0 }).lean({ getters: true })
+    async getAccountList(paginationData: PaginationData){
+        return paginate(AccountModel, { userId: this.user._id }, paginationData, { projection: { __v: 0 }, lean: true })    
+    }
+
+    async checkAccountDetails(accountId: ObjectId){
+        return await AccountModel.findOne({ _id: accountId, userId: this.user._id }).lean<Omit<AccountSchema, "balance" | "limit"> & { balance: number; limit: number }>({ getters: true })
     }
 }
