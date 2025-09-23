@@ -10,7 +10,7 @@ import { DbConnection } from "./config/dbconnection";
 import AuthRoute from "./routes/AuthRoutes";
 import type{ ObjectId } from "mongodb";
 import { RedisClient } from "./config/RedisConnection";
-import AccountRoute from "./routes/AcoountRoutes";
+import AccountRoute from "./routes/AccountRoutes";
 import TransactionLabelRoute from "./routes/TransactionLabelRoutes";
 import TransactionRoute from "./routes/TransactionRoutes";
 import cors from 'cors'
