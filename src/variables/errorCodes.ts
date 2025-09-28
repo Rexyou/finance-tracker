@@ -17,7 +17,7 @@ export const ErrorMessages = {
     PhoneNumberExistsError: { code: HttpCode.VALIDATION_ERROR, message: "phone_number_exists" },
     PasswordMismatchError: { code: HttpCode.VALIDATION_ERROR, message: "password_mismatch" },
     ValidationError: { code: HttpCode.VALIDATION_ERROR, message: "validation_error" },
-    UsernameOrPasswordError: { code: HttpCode.NOT_FOUND, message: "username_or_password_error" },
+    UsernameOrPasswordError: { code: HttpCode.UNAUTHORIZED, message: "username_or_password_error" },
     TokenInvalidError: { code: HttpCode.UNAUTHORIZED, message: "token_invalid" },
     AccountExistsError: { code: HttpCode.VALIDATION_ERROR, message: "account_exists" },
     AccountNotFoundError: { code: HttpCode.NOT_FOUND, message: "account_not_found" },
