@@ -28,4 +28,6 @@ export const ErrorMessages = {
     BalanceNotEnoughError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "balance_not_enough_error" },
     LimitNotEnoughError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "limit_not_enough_error" },
     CreditAccountLimitError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "credit_account_limit_error" }
-}
+} as const
+
+export type ErrorMessage = typeof ErrorMessages[keyof typeof ErrorMessages];

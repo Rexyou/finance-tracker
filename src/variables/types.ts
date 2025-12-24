@@ -95,3 +95,9 @@ export interface PaginateOptions {
   populate?: PopulateOption;
   lean?: boolean;
 }
+
+export interface FindOrFailParams<T> {
+    model: { findOne: (filter: Record<string, any>) => Promise<T | null> };
+    filter: Record<string, any>;
+    error: string;
+}

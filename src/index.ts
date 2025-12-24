@@ -8,13 +8,13 @@ import { ErrorMessages } from "./variables/errorCodes";
 import { CustomError } from "./utility/CustomError";
 import { DbConnection } from "./config/dbconnection";
 import AuthRoute from "./routes/AuthRoutes";
-import type{ ObjectId } from "mongodb";
 import { RedisClient } from "./config/RedisConnection";
 import AccountRoute from "./routes/AccountRoutes";
 import TransactionLabelRoute from "./routes/TransactionLabelRoutes";
 import TransactionRoute from "./routes/TransactionRoutes";
 import cors from 'cors'
 import { UserDocument } from "./schemas/users";
+import DashboardRoute from "./routes/DashboardRoutes";
 
 const app: Express = express();
 app.use(cors())
@@ -40,6 +40,7 @@ app.use('/auth', AuthRoute)
 app.use('/account', AccountRoute)
 app.use('/transactionLabel', TransactionLabelRoute)
 app.use('/transaction', TransactionRoute)
+app.use('/dashboard', DashboardRoute)
 
 app.get("*", (req, res, next) => {
   throw new CustomError(ErrorMessages.NotFound);

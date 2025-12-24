@@ -3,7 +3,7 @@ import { validateParameter } from "../utility/Validation";
 import { CreateTransactionSchema, UpdateTransactionSchema } from "../variables/ValidationSchemas";
 import { HttpCode } from "../variables/errorCodes";
 import { ObjectId } from "mongodb";
-import { TransactionService } from "../services/TransactionService";
+import ServiceContainer from "../services/ServiceContainer";
 
 export const createTransaction= async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -15,8 +15,7 @@ export const createTransaction= async (req: Request, res: Response, next: NextFu
             transactionLabelId: new ObjectId(filterData.transactionLabelId),
         };
 
-        const transactionService = new TransactionService(req.userData)
-        const result = await transactionService.createTransaction(payload)
+        const result = await ServiceContainer.transaction.createTransaction(req.userData, payload)
         res.status(HttpCode.CREATED).json(result);
         return
     } catch (error) {
@@ -26,8 +25,7 @@ export const createTransaction= async (req: Request, res: Response, next: NextFu
 
 export const getTransaction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const transactionService = new TransactionService(req.userData)
-        const result = await transactionService.getTransaction(req.body)
+        const result = await ServiceContainer.transaction.getTransaction(req.userData, req.body)
         res.json(result);
         return
     } catch (error) {
@@ -38,7 +36,6 @@ export const getTransaction = async (req: Request, res: Response, next: NextFunc
 export const editTransaction = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const filterData = validateParameter(req, UpdateTransactionSchema)
-        const transactionService = new TransactionService(req.userData)
         const { transactionId, ...filteredData } = filterData
 
         // Convert string IDs to ObjectId if present
@@ -48,7 +45,7 @@ export const editTransaction = async (req: Request, res: Response, next: NextFun
             transactionLabelId: filteredData.transactionLabelId ? new ObjectId(filteredData.transactionLabelId) : undefined,
         };
 
-        const result = await transactionService.editTransaction(new ObjectId(transactionId), updatedPayload)
+        const result = await ServiceContainer.transaction.editTransaction(req.userData, new ObjectId(transactionId), updatedPayload)
         res.json(result);
         return
     } catch (error) {

@@ -9,20 +9,18 @@ import { AccountModel } from "../schemas/account";
 import { AccountStatus, AccountType, TransactionType } from "../variables/Enums";
 import { AccountService } from "./AccountService";
 import { paginate } from "./GeneralService";
+import { findOrFail } from "./ModelService";
 
 export class TransactionService {
-    
-    public user: UserDocument
 
-    constructor(user: UserDocument) {
-        this.user = user
-    }
+    constructor(
+        private accountService: AccountService
+    ){}
 
-    async createTransaction(payload: TransactionPayload){
-        const newPayload = { ...payload, userId: this.user._id as ObjectId }
+    async createTransaction(user: UserDocument, payload: TransactionPayload){
+        const newPayload = { ...payload, userId: user._id as ObjectId }
 
-        const accountService = new AccountService(this.user)
-        const getAccountData = await accountService.checkAccountDetails(payload.accountId)
+        const getAccountData = await this.accountService.checkAccountDetails(user, payload.accountId)
         if(!getAccountData){
             throw new CustomError(ErrorMessages.AccountNotFoundError)
         }
@@ -59,16 +57,19 @@ export class TransactionService {
         return { id: result._id, ...payload }
     }
 
-    async editTransaction(transactionId: ObjectId, payload: TransactionUpdatePayload){
-        const checkTransaction = await TransactionModel.findOne({ _id: transactionId, userId: this.user._id }, { _id: 1, amount: 1, transactionType: 1, accountId: 1 }).lean<Omit<TransactionSchema, 'amount'> & { amount: number }>({ getters: true })
-        if(isEmpty(checkTransaction)){
-            throw new CustomError(ErrorMessages.NotFound)
-        }
-
+    async editTransaction(user: UserDocument, transactionId: ObjectId, payload: TransactionUpdatePayload){
+        const checkTransaction = await findOrFail<
+            TransactionSchema, // model document type
+            Omit<TransactionSchema, 'amount'> & { amount: number } // return lean type
+        >(
+            TransactionModel,
+            { _id: transactionId, userId: user._id },
+            { _id: 1, amount: 1, transactionType: 1, accountId: 1 },
+            { getters: true }
+        );
         const accountId = checkTransaction.accountId as ObjectId
 
-        const accountService = new AccountService(this.user)
-        const getAccountData = await accountService.checkAccountDetails(accountId)
+        const getAccountData = await this.accountService.checkAccountDetails(user, accountId)
         if(!getAccountData){
             throw new CustomError(ErrorMessages.AccountNotFoundError)
         }
@@ -128,7 +129,7 @@ export class TransactionService {
         return result
     }
 
-    async getTransaction(paginationData: PaginationData){
-        return paginate(TransactionModel, { userId: this.user._id }, paginationData, { projection: { __v: 0 }, lean: true })
+    async getTransaction(user: UserDocument, paginationData: PaginationData){
+        return paginate(TransactionModel, { userId: user._id }, paginationData, { projection: { __v: 0 }, lean: true })
     }
 }

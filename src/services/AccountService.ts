@@ -7,22 +7,16 @@ import { ErrorMessages } from "../variables/errorCodes";
 import { isEmpty } from "../utility/GeneralFunctions";
 import { AccountType } from "../variables/Enums";
 import { paginate } from "./GeneralService";
+import { findOrFail } from "./ModelService";
 
 export class AccountService {
-    
-    public user: UserDocument
-
-    constructor(user: UserDocument) {
-        this.user = user
-    }
-
     private static verifyUniqueAccount(userPayload: VerifyAccount){
         return AccountModel.find(userPayload, { _id: 1 }).read("secondaryPreferred")
     }
 
-    async createAccount(payload: AccountPayload){
+    async createAccount(user: UserDocument, payload: AccountPayload){
         // Check account unique for each user
-        const newPayload = { ...payload, userId: this.user._id as ObjectId }
+        const newPayload = { ...payload, userId: user._id as ObjectId }
         const checkUniqueAccount = await AccountService.verifyUniqueAccount(newPayload);
         if(!isEmpty(checkUniqueAccount)){
             throw new CustomError(ErrorMessages.AccountExistsError)
@@ -37,20 +31,26 @@ export class AccountService {
         return { id: result._id, ...payload }
     }
 
-    async editAccount(accountId: ObjectId, payload: AccountUpdatePayload){
-        const checkAccount = await AccountModel.findOne({ _id: accountId, userId: this.user._id }, { _id: 1 })
-        if(isEmpty(checkAccount)){
-            throw new CustomError(ErrorMessages.NotFound)
-        }
+    async editAccount(user: UserDocument, accountId: ObjectId, payload: AccountUpdatePayload){
+        await findOrFail<AccountSchema>(
+            AccountModel,
+            { _id: accountId, userId: user._id },
+            { _id: 1 }
+        )
 
         return await AccountModel.findByIdAndUpdate(accountId, payload, { new: true, projection: { __v: 0 } }).lean({ getters: true })
     }
 
-    async getAccountList(paginationData: PaginationData){
-        return paginate(AccountModel, { userId: this.user._id }, paginationData, { projection: { __v: 0 }, lean: true })    
+    async getAccountList(user: UserDocument, paginationData: PaginationData){
+        return paginate(AccountModel, { userId: user._id }, paginationData, { projection: { __v: 0 }, lean: true })    
     }
 
-    async checkAccountDetails(accountId: ObjectId){
-        return await AccountModel.findOne({ _id: accountId, userId: this.user._id }).lean<Omit<AccountSchema, "balance" | "limit"> & { balance: number; limit: number }>({ getters: true })
+    async checkAccountDetails(user: UserDocument, accountId: ObjectId){
+        return await findOrFail<AccountSchema, Omit<AccountSchema, "balance" | "limit"> & { balance: number; limit: number }>(
+            AccountModel,
+            { _id: accountId, userId: user._id },
+            { _id: 1, status: 1, balance: 1, limit: 1 },
+            { getters: true }
+        )
     }
 }

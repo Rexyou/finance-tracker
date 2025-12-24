@@ -1,6 +1,4 @@
 import { createClient } from 'redis';
-import { CustomError } from '../utility/CustomError';
-import { ErrorMessages } from '../variables/errorCodes';
 
 export let clientInstance: ReturnType<typeof createClient> | null = null;
 
@@ -37,14 +35,14 @@ export const RedisClient = async () => {
             console.log('[Redis]: Client connected successfully.');
             clientInstance = client;
             return client;
-        } else {
-            console.warn('[Redis]: Client connection failed.');
         }
+        
+        console.warn('[Redis]: Client connection failed.');
+        return null
     } catch (err: any) {
         console.error(`[Redis]: Connection failed - ${err.message}`);
         // Optional: log to external monitoring or alert
+        clientInstance = null
+        return null
     }
-
-    // Return null gracefully if Redis connection fails
-    return null;
 };

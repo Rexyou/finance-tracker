@@ -64,7 +64,7 @@ export const getCacheData = async <T> (key: string) => {
 export const setCacheData = async <T> (key: string, ttl: number, dbQuery: () => Promise<T | null>) => {
     const data = await dbQuery();
     if (!data) {
-        throw new CustomError(ErrorMessages.NotFound);
+        return null;
     }
 
     if (clientInstance) {

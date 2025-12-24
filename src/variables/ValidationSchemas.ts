@@ -28,7 +28,7 @@ export const RegisterSchema = z.object({
     }),
     phoneNumber: phoneNumberValidator,
     email: emailValidator.nonempty(),
-})
+}).strict()
 
 export const LoginSchema = z.object({
     username: z.union([z.string(), z.number()]).refine((value) => {
@@ -48,7 +48,7 @@ export const LoginSchema = z.object({
         message: 'Must be a valid username, email, or phone number',
       }),
     password: z.string().min(8).max(16).nonempty(),
-})
+}).strict()
 
 export const CreateAccountSchema = z.object({
   type: z.nativeEnum(AccountType),
@@ -59,7 +59,7 @@ export const CreateAccountSchema = z.object({
     message: "Account number must be between 6 and 20 digits",
   }),
   limit: z.number().optional(),
-}).superRefine((data, ctx) => {
+}).strict().superRefine((data, ctx) => {
   if (data.type === AccountType.CreditAccount) {
     if (data.limit === undefined) {
       ctx.addIssue({
@@ -75,7 +75,7 @@ export const CreateAccountSchema = z.object({
       });
     }
   }
-});
+})
 
 export const UpdateAccountSchema = z.object({
   accountId: z.string().nonempty(),
@@ -87,21 +87,21 @@ export const UpdateAccountSchema = z.object({
     message: 'Account number must be between 6 and 20 digits',
   }).optional(),
   status: z.nativeEnum(AccountStatus).optional(),
-})
+}).strict()
 
 const hexColorRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
 
 export const CreateTransactionLabelSchema = z.object({
   labelName: z.string().nonempty(),
   labelColor: z.string().regex(hexColorRegex).optional(),
-})
+}).strict()
 
 export const UpdateTransactionLabelSchema = z.object({
   transactionLabelId: z.string().nonempty(),
   labelName: z.string().nonempty().optional(),
   labelColor: z.string().regex(hexColorRegex).optional(),
   status: z.nativeEnum(TransactionLabelStatus).optional(),
-})
+}).strict()
 
 export const CreateTransactionSchema = z.object({
   transactionType: z.nativeEnum(TransactionType),
@@ -109,7 +109,7 @@ export const CreateTransactionSchema = z.object({
   transactionLabelId: objectIdSchema,
   amount: z.number().min(1),
   remarks: z.string().optional()
-})
+}).strict()
 
 export const UpdateTransactionSchema = z.object({
   transactionId: objectIdSchema.optional(),
@@ -118,4 +118,4 @@ export const UpdateTransactionSchema = z.object({
   accountId: objectIdSchema.optional(),
   amount: z.number().min(1).optional(),
   remarks: z.string().optional()
-})
+}).strict()

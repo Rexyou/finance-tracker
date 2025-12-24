@@ -1,18 +1,19 @@
 import type { ObjectId } from "mongodb";
-import { type UserDocument, UserModel } from "../schemas/users";
+import { type UserDocument, UserModel, UserSchema } from "../schemas/users";
 import { CustomError } from "../utility/CustomError";
-import { generateToken, getOrSetCache, isEmpty } from "../utility/GeneralFunctions";
+import { generateToken, getOrSetCache } from "../utility/GeneralFunctions";
 import { ErrorMessages } from "../variables/errorCodes";
 import type { LoginPayload, RegisterPayload } from "../variables/types";
 import bcrypt from "bcryptjs";
 import { RedisKeyName } from "../variables/Enums";
+import { findOrFail } from "./ModelService";
 
 export class AuthService {
 
     private constructor() {} 
 
     static async checkUniqueValue(target: string, value: string | number){ 
-        return UserModel.findOne({ [target]: value }, { [target]: 1 });
+        return findOrFail(UserModel, { [target]: value }, { [target]: 1 })
     }
 
     static generateEncryptedPassword(password: string){
@@ -65,12 +66,15 @@ export class AuthService {
             usernameFilter = { phoneNumber: username };
         }
 
-        const user = await UserModel.findOne<{ password: string, _id: ObjectId }>(usernameFilter, { password: 1, _id: 1 }).read('secondaryPreferred')
-        if(!user){
+        const user = await findOrFail<UserSchema, { _id: ObjectId; password: string }>(
+            UserModel,
+            usernameFilter,
+            { password: 1, _id: 1 },
+        ).catch(() => {
             throw new CustomError(ErrorMessages.UsernameOrPasswordError)
-        }
+        });
 
-        const isPasswordValid = AuthService.comparePassword(user.password, password)
+      const isPasswordValid = AuthService.comparePassword(user.password, password)
         if(!isPasswordValid){
             throw new CustomError(ErrorMessages.UsernameOrPasswordError)
         }
@@ -81,7 +85,7 @@ export class AuthService {
     }
 
     static async getProfile(userId: ObjectId){
-        return await getOrSetCache(`${RedisKeyName.UserData}:${userId}`, 60 * 60 * 24, ()=> UserModel.findById(userId, { password: 0, __v: 0 }).lean()) as UserDocument
+        return await getOrSetCache(`${RedisKeyName.UserData}:${userId}:profile`, 900, ()=> UserModel.findById(userId, { password: 0, __v: 0 }).lean()) as UserDocument
     }
       
 };

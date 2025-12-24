@@ -25,5 +25,5 @@ const userSchema = new Schema({
 export type UserSchema = InferSchemaType<typeof userSchema>;
 export type UserDocument = HydratedDocument<UserSchema>;
 
-export const UserModel = model("User", userSchema);
+export const UserModel = model<UserSchema>("User", userSchema);
 
