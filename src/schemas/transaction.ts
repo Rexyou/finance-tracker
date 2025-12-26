@@ -19,4 +19,4 @@ transactionSchema.plugin(mongooseLeanGetters);
 export type TransactionSchema = InferSchemaType<typeof transactionSchema>;
 export type TransactionDocument = HydratedDocument<TransactionSchema>;
 
-export const TransactionModel = model("Transaction", transactionSchema);
+export const TransactionModel = model("Transactions", transactionSchema);

@@ -10,6 +10,7 @@ import { AccountStatus, AccountType, TransactionType } from "../variables/Enums"
 import { AccountService } from "./AccountService";
 import { paginate } from "./GeneralService";
 import { findOrFail } from "./ModelService";
+import { PopulateOptions } from "mongoose";
 
 export class TransactionService {
 
@@ -130,6 +131,9 @@ export class TransactionService {
     }
 
     async getTransaction(user: UserDocument, paginationData: PaginationData){
-        return paginate(TransactionModel, { userId: user._id }, paginationData, { projection: { __v: 0 }, lean: true })
+        return paginate(TransactionModel, { userId: user._id }, paginationData, { projection: { __v: 0 }, lean: true, populate: {
+                path: 'transactionLabelId',
+                select: 'labelName labelColor -_id'
+        } })
     }
 }

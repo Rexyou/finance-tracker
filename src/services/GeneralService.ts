@@ -18,11 +18,21 @@ export async function paginate<T>(
 
   let query = model.find(filter, options.projection || {});
 
-  if (options.populate) {
-    query = query.populate(options.populate);
-  }
-  if (options.lean !== false) {   // default true
+  // Apply lean first
+  if (options.lean !== false) {
     query = query.lean({ getters: true });
+  }
+
+  // Then populate
+  if (options.populate) {
+    // Handle both single and array of populates
+    if (Array.isArray(options.populate)) {
+      options.populate.forEach(pop => {
+        query = query.populate(pop);
+      });
+    } else {
+      query = query.populate(options.populate);
+    }
   }
 
   const [data, counter] = await Promise.all([

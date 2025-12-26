@@ -1,6 +1,6 @@
 import type { ObjectId } from "mongodb";
 import type { AccountStatus, AccountType, TransactionLabelStatus, TransactionType } from "./Enums";
-import { PopulateOption } from "mongoose";
+import { PopulateOptions } from "mongoose";
 
 export type UserPayload = {
     username: string;
@@ -92,7 +92,7 @@ export interface PaginationResult<T> {
 
 export interface PaginateOptions {
   projection?: Record<string, 0 | 1>;
-  populate?: PopulateOption;
+  populate?: PopulateOptions | PopulateOptions[];
   lean?: boolean;
 }
 

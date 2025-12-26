@@ -16,4 +16,4 @@ transactionLabelSchema.index({ userId: 1, labelName: 1 }, { unique: true });
 export type TransactionLabelSchema = InferSchemaType<typeof transactionLabelSchema>;
 export type TransactionLabelDocument = HydratedDocument<TransactionLabelSchema>;
 
-export const TransactionLabelModel = model("TransactionLabel", transactionLabelSchema);
+export const TransactionLabelModel = model("TransactionLabels", transactionLabelSchema);

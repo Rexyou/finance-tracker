@@ -19,4 +19,4 @@ accountSchema.plugin(mongooseLeanGetters);
 export type AccountSchema = InferSchemaType<typeof accountSchema>;
 export type AccountDocument = HydratedDocument<AccountSchema>;
 
-export const AccountModel = model("Account", accountSchema);
+export const AccountModel = model("Accounts", accountSchema);
