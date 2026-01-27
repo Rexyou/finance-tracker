@@ -27,17 +27,24 @@ export type NonEmpty<T> = T extends null | undefined | '' | [] | Record<string, 
 export interface AccountPayload {
     type: AccountType;
     accountNumber: number;
+    balance: number;
+    label: string;
+    availableCredit?: number | undefined;
     limit?: number | undefined;
+    amountUsed?: number | undefined;
 }
 
 export type AccountUpdatePayload = {
     type?: AccountType;
     accountNumber?: number;
     limit?: number | undefined;
+    availableCredit?: number | undefined;
+    amountUsed?: number | undefined;
     status?: AccountStatus;
+    label?: string;
 }
 
-export type VerifyAccount = Omit<AccountPayload, 'balance'> & {
+export type VerifyAccount = Omit<AccountPayload, 'balance' | 'limit' | 'availableCredit' | 'amountUsed'> & {
     userId: ObjectId;
 };
 

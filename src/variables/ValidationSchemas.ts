@@ -6,22 +6,29 @@ import mongoose from "mongoose";
 const usernameValidator = z.string().min(8).max(16).regex(/^[a-zA-Z0-9]+$/);
 const emailValidator = z.string().email();
 const phoneNumberValidator = z.number().refine((num) => {
-    const str = num.toString();
+  const str = num.toString();
     return str.length >= 4 && str.length <= 16;
   }, {
     message: 'Phone number must be between 4 and 16 digits',
   });
 
-const objectIdSchema = z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
-  message: 'Invalid ObjectId',
+  const objectIdSchema = z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
+    message: 'Invalid ObjectId',
 });
 
+const nameValidator = z.string().min(3).max(32).regex(/^[a-zA-Z]+$/);
+
+const passwordValidator = z.string().min(8).max(16);
+
+const labelValidator = z.string().min(3).max(32).regex(/^[a-zA-Z0-9\s\-_&(),.'"]+$/);
+const hexColorRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
+
 export const RegisterSchema = z.object({
-    username: usernameValidator.nonempty(),
-    firstName: z.string().min(3).max(32).regex(/^[a-zA-Z]+$/).nonempty(),
-    lastName: z.string().min(3).max(32).regex(/^[a-zA-Z]+$/).nonempty(),
-    password: z.string().min(8).max(16).nonempty(),
-    confirmPassword: z.string().min(8).max(16).nonempty(),
+    username: usernameValidator,
+    firstName: nameValidator,
+    lastName: nameValidator,
+    password: passwordValidator,
+    confirmPassword: passwordValidator,
     country: z.string().min(2).max(3).regex(/^[a-zA-Z0-9]+$/).nonempty(),
     countryCode: z.number().refine(num => num.toString().length >= 2 && num.toString().length <= 3, {
         message: 'Country code must be between 2 and 3 digits',
@@ -31,23 +38,20 @@ export const RegisterSchema = z.object({
 }).strict()
 
 export const LoginSchema = z.object({
-    username: z.union([z.string(), z.number()]).refine((value) => {
-        if (typeof value === 'string') {
-            return (
-              usernameValidator.safeParse(value).success ||
-              emailValidator.safeParse(value).success
-            );
-        }
+    username: z.string().min(1).refine(
+      (value) => {
+        const isUsername = usernameValidator.safeParse(value).success;
+        const isEmail = emailValidator.safeParse(value).success;
+        const phoneNum = Number(value);
+        const isPhone = !isNaN(phoneNum) && phoneNumberValidator.safeParse(phoneNum).success;
         
-        if (typeof value === 'number') {
-            return phoneNumberValidator.safeParse(value).success;
-        }
-      
-        return false;
-      }, {
-        message: 'Must be a valid username, email, or phone number',
-      }),
-    password: z.string().min(8).max(16).nonempty(),
+        return isUsername || isEmail || isPhone;
+      },
+      {
+        message: 'Must be a valid username (8-16 alphanumeric), email, or phone number (4-16 digits)',
+      }
+    ),
+    password: passwordValidator,
 }).strict()
 
 export const CreateAccountSchema = z.object({
@@ -58,6 +62,8 @@ export const CreateAccountSchema = z.object({
   }, {
     message: "Account number must be between 6 and 20 digits",
   }),
+  balance: z.number(),
+  label: labelValidator,
   limit: z.number().optional(),
 }).strict().superRefine((data, ctx) => {
   if (data.type === AccountType.CreditAccount) {
@@ -78,8 +84,8 @@ export const CreateAccountSchema = z.object({
 })
 
 export const UpdateAccountSchema = z.object({
-  accountId: z.string().nonempty(),
-  type: z.nativeEnum(AccountType).optional(),
+  accountId: objectIdSchema,
+  label: labelValidator.optional(),
   accountNumber: z.number().refine((num) => {
     const str = num.toString();
     return str.length >= 6 && str.length <= 20;
@@ -89,7 +95,6 @@ export const UpdateAccountSchema = z.object({
   status: z.nativeEnum(AccountStatus).optional(),
 }).strict()
 
-const hexColorRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
 
 export const CreateTransactionLabelSchema = z.object({
   labelName: z.string().nonempty(),

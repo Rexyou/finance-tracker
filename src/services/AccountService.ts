@@ -16,14 +16,18 @@ export class AccountService {
 
     async createAccount(user: UserDocument, payload: AccountPayload){
         // Check account unique for each user
-        const newPayload = { ...payload, userId: user._id as ObjectId }
+        let newPayload: { userId: ObjectId } & AccountPayload = { ...payload, userId: user._id as ObjectId }
         const checkUniqueAccount = await AccountService.verifyUniqueAccount(newPayload);
         if(!isEmpty(checkUniqueAccount)){
             throw new CustomError(ErrorMessages.AccountExistsError)
         }
 
-        if(payload.type === AccountType.CreditAccount && isEmpty(payload.limit)){
-            throw new CustomError(ErrorMessages.CreditAccountLimitError)
+        if(payload.type === AccountType.CreditAccount){
+            if(isEmpty(payload.limit)){
+                throw new CustomError(ErrorMessages.CreditAccountLimitError)
+            }
+
+            newPayload = { ...newPayload, availableCredit: payload.limit, amountUsed: 0, balance: 0 }
         }
         
         const result = await AccountModel.create(newPayload)
@@ -32,11 +36,20 @@ export class AccountService {
     }
 
     async editAccount(user: UserDocument, accountId: ObjectId, payload: AccountUpdatePayload){
-        await findOrFail<AccountSchema>(
+        const account = await findOrFail<AccountSchema, Omit<AccountSchema, 'balance' | 'limit' | 'availableCredit' | 'amountUsed'> & { balance: number; limit: number; availableCredit: number; amountUsed: number }>(
             AccountModel,
             { _id: accountId, userId: user._id },
-            { _id: 1 }
+            { _id: 1, type: 1, balance: 1, limit: 1, availableCredit: 1, amountUsed: 1  },
         )
+
+        if(account.type === AccountType.CreditAccount && !isEmpty(payload.limit)){
+            if(payload.limit < account.amountUsed){
+                throw new CustomError(ErrorMessages.CreditAccountLimitError)
+            }
+
+            const newAvailableCredit = payload.limit - account.amountUsed
+            payload = { ...payload, availableCredit: newAvailableCredit }
+        }
 
         return await AccountModel.findByIdAndUpdate(accountId, payload, { new: true, projection: { __v: 0 } }).lean({ getters: true })
     }

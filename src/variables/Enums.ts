@@ -10,10 +10,10 @@ export enum UserStatus {
 }
 
 export enum AccountType {
-    DebitAccount = "DebitAccount", // Debit Card
-    CreditAccount = "CreditAccount", // Credit Card
-    FixedDeposit = "FixedDeposit",
-    Cash = "Cash",
+    DebitAccount = "debitAccount", // Debit Card
+    CreditAccount = "creditAccount", // Credit Card
+    FixedDeposit = "fixedDeposit",
+    Cash = "cash",
 }
 
 export enum AccountStatus {

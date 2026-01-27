@@ -6,10 +6,13 @@ import mongooseLeanGetters from "mongoose-lean-getters";
 const accountSchema = new Schema({
     type: { type: String, enum: Object.values(AccountType), required: true },
     userId: { type: ObjectId, ref: "Users", required: true },
+    label: { type: String, required: true },
     balance: { type: Schema.Types.Decimal128, default: 0, get: (v: Decimal128) => Number(v), set: (v: number) => mongoose.Types.Decimal128.fromString(v.toFixed(2))},
     status: { type: String, enum: Object.values(AccountStatus), default: AccountStatus.Active },
     accountNumber: { type: Number, required: true },
     limit: { type: Schema.Types.Decimal128, default: 0, get: (v: Decimal128) => Number(v), set: (v: number) => mongoose.Types.Decimal128.fromString(v.toFixed(2))}, // this one use for credit account to limit incoming transaction
+    amountUsed: { type: Schema.Types.Decimal128, default: 0, get: (v: Decimal128) => Number(v), set: (v: number) => mongoose.Types.Decimal128.fromString(v.toFixed(2))}, // this one use for credit account to track how much amount used
+    availableCredit: { type: Schema.Types.Decimal128, default: 0, get: (v: Decimal128) => Number(v), set: (v: number) => mongoose.Types.Decimal128.fromString(v.toFixed(2))}, // this one use for credit account to track how much credit is available
 }, {
     timestamps: true,
 })
