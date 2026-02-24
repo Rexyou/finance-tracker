@@ -27,7 +27,10 @@ export const ErrorMessages = {
     TransactionUpdateError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "transaction_update_error" },
     BalanceNotEnoughError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "balance_not_enough_error" },
     LimitNotEnoughError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "limit_not_enough_error" },
-    CreditAccountLimitError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "credit_account_limit_error" }
+    CreditAccountLimitError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "credit_account_limit_error" },
+    CreditAmountOverLimitError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "credit_amount_over_limit_error" },
+    InvalidAccountFieldError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "invalid_account_field_error" },
+    DeleteTransactionError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "delete_transaction_error" },
 } as const
 
 export type ErrorMessage = typeof ErrorMessages[keyof typeof ErrorMessages];

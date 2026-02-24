@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { validateParameter } from "../utility/Validation";
-import { CreateTransactionSchema, UpdateTransactionSchema } from "../variables/ValidationSchemas";
+import { CreateTransactionSchema, DeleteTransactionSchema, UpdateTransactionSchema } from "../variables/ValidationSchemas";
 import { HttpCode } from "../variables/errorCodes";
 import { ObjectId } from "mongodb";
 import ServiceContainer from "../services/ServiceContainer";
@@ -46,6 +46,18 @@ export const editTransaction = async (req: Request, res: Response, next: NextFun
         };
 
         const result = await ServiceContainer.transaction.editTransaction(req.userData, new ObjectId(transactionId), updatedPayload)
+        res.json(result);
+        return
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const deleteTransaction = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { transactionId } = validateParameter(req, DeleteTransactionSchema)
+
+        const result = await ServiceContainer.transaction.deleteTransaction(req.userData, new ObjectId(transactionId))
         res.json(result);
         return
     } catch (error) {

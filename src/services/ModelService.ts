@@ -20,7 +20,7 @@ export async function findOrFail<
         query = query.read(options.readPref);
     }
 
-    const result = await query.lean<ReturnType>(options?.lean ?? true);
+    const result = await query.lean<ReturnType>({ getters: options?.lean ?? true });
 
     if (!result) {
         throw new CustomError(error);

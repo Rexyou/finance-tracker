@@ -42,13 +42,25 @@ export class AccountService {
             { _id: 1, type: 1, balance: 1, limit: 1, availableCredit: 1, amountUsed: 1  },
         )
 
-        if(account.type === AccountType.CreditAccount && !isEmpty(payload.limit)){
-            if(payload.limit < account.amountUsed){
-                throw new CustomError(ErrorMessages.CreditAccountLimitError)
+        if(account.type === AccountType.DebitAccount){
+            if(!isEmpty(payload.limit)){
+                throw new CustomError(ErrorMessages.InvalidAccountFieldError)
+            }
+        }
+
+        if(account.type === AccountType.CreditAccount){
+            if(!isEmpty(payload.balance)){
+                throw new CustomError(ErrorMessages.InvalidAccountFieldError)
             }
 
-            const newAvailableCredit = payload.limit - account.amountUsed
-            payload = { ...payload, availableCredit: newAvailableCredit }
+            if(!isEmpty(payload.limit)){
+                if(payload.limit < account.amountUsed){
+                    throw new CustomError(ErrorMessages.CreditAccountLimitError)
+                }
+
+                const newAvailableCredit = payload.limit - account.amountUsed
+                payload = { ...payload, availableCredit: newAvailableCredit }
+            }
         }
 
         return await AccountModel.findByIdAndUpdate(accountId, payload, { new: true, projection: { __v: 0 } }).lean({ getters: true })
@@ -59,11 +71,11 @@ export class AccountService {
     }
 
     async checkAccountDetails(user: UserDocument, accountId: ObjectId){
-        return await findOrFail<AccountSchema, Omit<AccountSchema, "balance" | "limit"> & { balance: number; limit: number }>(
+        return await findOrFail<AccountSchema, Omit<AccountSchema, "balance" | "limit" | "availableCredit" | "amountUsed"> & { balance: number; limit: number; availableCredit: number; amountUsed: number }>(
             AccountModel,
             { _id: accountId, userId: user._id },
-            { _id: 1, status: 1, balance: 1, limit: 1 },
-            { getters: true }
+            { _id: 1, type: 1, status: 1, balance: 1, limit: 1, availableCredit: 1, amountUsed: 1 },
+            { lean: true }
         )
     }
 }

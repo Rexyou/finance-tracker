@@ -54,34 +54,20 @@ export const LoginSchema = z.object({
     password: passwordValidator,
 }).strict()
 
-export const CreateAccountSchema = z.object({
-  type: z.nativeEnum(AccountType),
+const baseAccountFields = {
   accountNumber: z.number().refine((num) => {
     const str = num.toString();
     return str.length >= 6 && str.length <= 20;
   }, {
     message: "Account number must be between 6 and 20 digits",
   }),
-  balance: z.number(),
   label: labelValidator,
-  limit: z.number().optional(),
-}).strict().superRefine((data, ctx) => {
-  if (data.type === AccountType.CreditAccount) {
-    if (data.limit === undefined) {
-      ctx.addIssue({
-        path: ["limit"],
-        code: "custom",
-        message: "Limit is required for credit accounts",
-      });
-    } else if (data.limit <= 0) {
-      ctx.addIssue({
-        path: ["limit"],
-        code: "custom",
-        message: "Limit must be greater than 0",
-      });
-    }
-  }
-})
+};
+
+export const CreateAccountSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal(AccountType.DebitAccount), ...baseAccountFields, balance: z.number() }).strict(),
+  z.object({ type: z.literal(AccountType.CreditAccount), ...baseAccountFields, limit: z.number().positive({ message: "Limit must be greater than 0" }) }).strict(),
+]);
 
 export const UpdateAccountSchema = z.object({
   accountId: objectIdSchema,
@@ -93,6 +79,8 @@ export const UpdateAccountSchema = z.object({
     message: 'Account number must be between 6 and 20 digits',
   }).optional(),
   status: z.nativeEnum(AccountStatus).optional(),
+  balance: z.number().optional(),
+  limit: z.number().positive({ message: "Limit must be greater than 0" }).optional(),
 }).strict()
 
 
@@ -118,9 +106,12 @@ export const CreateTransactionSchema = z.object({
 
 export const UpdateTransactionSchema = z.object({
   transactionId: objectIdSchema.optional(),
-  transactionType: z.nativeEnum(TransactionType).optional(),
   transactionLabelId: objectIdSchema.optional(),
   accountId: objectIdSchema.optional(),
   amount: z.number().min(1).optional(),
   remarks: z.string().optional()
+}).strict()
+
+export const DeleteTransactionSchema = z.object({
+  transactionId: objectIdSchema.optional(),
 }).strict()
