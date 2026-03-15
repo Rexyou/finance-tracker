@@ -22,7 +22,7 @@ export class DbConnection {
             console.log("[Mongo]: Connection ok.")
             await this.syncIndex()
         } catch (error) {
-            console.log("[Mongo]: connection error.")
+            console.log("[Mongo]: Connection error: ", error)
             throw new CustomError(ErrorMessages.UnknownError)
         }
     }
