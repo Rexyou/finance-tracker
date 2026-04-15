@@ -22,6 +22,7 @@ const passwordValidator = z.string().min(8).max(16);
 
 const labelValidator = z.string().min(3).max(32).regex(/^[a-zA-Z0-9\s\-_&(),.'"]+$/);
 const hexColorRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
+const dateValidator = z.coerce.date()
 
 export const RegisterSchema = z.object({
     username: usernameValidator,
@@ -114,4 +115,16 @@ export const UpdateTransactionSchema = z.object({
 
 export const DeleteTransactionSchema = z.object({
   transactionId: objectIdSchema.optional(),
+}).strict()
+
+export const PaginateSchema = z.object({
+    page: z.number().int().positive(),
+    size: z.number().int().positive(),
+    sort: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])),
+}).strict()
+
+export const DatePaginationSchema = z.object({
+  dateFrom: dateValidator,
+  dateTo: dateValidator,
+  pagination: PaginateSchema
 }).strict()

@@ -108,3 +108,9 @@ export interface FindOrFailParams<T> {
     filter: Record<string, any>;
     error: string;
 }
+
+export interface DatePaginationPayload {
+    dateFrom: Date;
+    dateTo: Date;
+    pagination: PaginationData
+}

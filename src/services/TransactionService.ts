@@ -1,6 +1,6 @@
 import type { ObjectId } from "mongodb";
 import type { UserDocument } from "../schemas/users";
-import type { PaginationData, TransactionPayload, TransactionUpdatePayload } from "../variables/types";
+import type { DatePaginationPayload, TransactionPayload, TransactionUpdatePayload } from "../variables/types";
 import { CustomError } from "../utility/CustomError";
 import { ErrorMessages } from "../variables/errorCodes";
 import { isEmpty } from "../utility/GeneralFunctions";
@@ -10,7 +10,7 @@ import { AccountStatus, AccountType, TransactionType } from "../variables/Enums"
 import { AccountService } from "./AccountService";
 import { paginate } from "./GeneralService";
 import { findOrFail } from "./ModelService";
-import mongoose from "mongoose";
+import mongoose, { PipelineStage } from "mongoose";
 
 export async function withSession<T>(fn: (session: mongoose.ClientSession) => Promise<T>): Promise<T> {
     const session = await mongoose.startSession()
@@ -252,8 +252,24 @@ export class TransactionService {
         ).session(session)
     }
 
-    async getTransaction(user: UserDocument, paginationData: PaginationData){
-        return paginate(TransactionModel, { userId: user._id }, paginationData, { projection: { __v: 0 }, lean: true, populate: {
+    async getTransaction(user: UserDocument, paginationData: DatePaginationPayload){
+        const { dateFrom, dateTo, pagination } = paginationData
+        let filter: {
+            userId: ObjectId;
+            createdAt?: { $gte?: Date; $lte?: Date }
+        } = {
+            userId: user._id,
+        }
+
+        if(dateFrom){
+            filter = { ...filter, createdAt: { $gte: dateFrom } }
+        }
+
+        if(dateTo){
+            filter = { ...filter, createdAt: { ...filter.createdAt, $lte: dateTo } }
+        }
+
+        return paginate(TransactionModel, filter, pagination, { projection: { __v: 0 }, lean: true, populate: {
             path: 'transactionLabelId',
             select: 'labelName labelColor -_id'
         }})
@@ -310,4 +326,58 @@ export class TransactionService {
             return { id: transactionId }
         })
     }
+
+async getTransactionsByTransactionLabel(user: UserDocument, transactionsByLabelPayload: DatePaginationPayload) {
+    const { 
+        dateFrom, 
+        dateTo, 
+        pagination: { page = 1, size = 10 } = {} 
+    } = transactionsByLabelPayload;
+    
+    const skip = (page - 1) * size;
+
+    const pipeline: PipelineStage[] = [
+        {
+            $match: {
+                userId: user._id,
+                createdAt: { $gte: dateFrom, $lte: dateTo }
+            }
+        },
+        {
+            $lookup: {
+                from: 'transactionlabels',
+                localField: 'transactionLabelId',
+                foreignField: '_id',
+                as: 'transactionLabel'
+            }
+        },
+        { $unwind: '$transactionLabel' },
+        {
+            $group: {
+                _id: '$transactionLabelId',
+                labelName: { $first: '$transactionLabel.labelName' },
+                labelColor: { $first: '$transactionLabel.labelColor' },
+                totalAmount: { $sum: '$amount' },
+                count: { $sum: 1 }
+            }
+        },
+        { $addFields: { totalAmount: { $toDouble: "$totalAmount" } } },
+        { $sort: { totalAmount: -1 } },
+        {
+            $facet: {
+                metadata: [{ $count: 'total' }],
+                data: [{ $skip: skip }, { $limit: size }]
+            }
+        },
+        {
+            $project: {
+                totalCount: { $ifNull: [{ $arrayElemAt: ["$metadata.total", 0] }, 0] },
+                data: 1
+            }
+        }
+    ];
+
+    const [result] = await TransactionModel.aggregate(pipeline);
+    return result || { totalCount: 0, data: [] };
+}
 }

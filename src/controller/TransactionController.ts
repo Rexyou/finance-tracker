@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { validateParameter } from "../utility/Validation";
-import { CreateTransactionSchema, DeleteTransactionSchema, UpdateTransactionSchema } from "../variables/ValidationSchemas";
+import { CreateTransactionSchema, DeleteTransactionSchema, DatePaginationSchema, UpdateTransactionSchema } from "../variables/ValidationSchemas";
 import { HttpCode } from "../variables/errorCodes";
 import { ObjectId } from "mongodb";
 import ServiceContainer from "../services/ServiceContainer";
@@ -25,7 +25,9 @@ export const createTransaction= async (req: Request, res: Response, next: NextFu
 
 export const getTransaction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const result = await ServiceContainer.transaction.getTransaction(req.userData, req.body)
+        const filterData = validateParameter(req, DatePaginationSchema)
+
+        const result = await ServiceContainer.transaction.getTransaction(req.userData, filterData)
         res.json(result);
         return
     } catch (error) {
@@ -58,6 +60,18 @@ export const deleteTransaction = async (req: Request, res: Response, next: NextF
         const { transactionId } = validateParameter(req, DeleteTransactionSchema)
 
         const result = await ServiceContainer.transaction.deleteTransaction(req.userData, new ObjectId(transactionId))
+        res.json(result);
+        return
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const getTransactionsByLabel = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const filterData = validateParameter(req, DatePaginationSchema)
+
+        const result = await ServiceContainer.transaction.getTransactionsByTransactionLabel(req.userData, filterData)
         res.json(result);
         return
     } catch (error) {
