@@ -1,6 +1,6 @@
 import type { ObjectId } from "mongodb";
 import type { UserDocument } from "../schemas/users";
-import type { PaginationData, TransactionLabelPayload, TransactionLabelUpdatePayload, VerifyLabel } from "../variables/types";
+import type { DatePaginationPayload, TransactionLabelPayload, TransactionLabelUpdatePayload, VerifyLabel } from "../variables/types";
 import { CustomError } from "../utility/CustomError";
 import { ErrorMessages } from "../variables/errorCodes";
 import { isEmpty } from "../utility/GeneralFunctions";
@@ -32,7 +32,7 @@ export class TransactionLabelService {
         return await TransactionLabelModel.findByIdAndUpdate(labelId, payload, { new: true, projection: { __v: 0 } })
     }
 
-    async getTransactionLabel(user: UserDocument, paginationData: PaginationData){
-        return paginate(TransactionLabelModel, { userId: user._id }, paginationData, { projection: { __v: 0 }, lean: true })
+    async getTransactionLabel(user: UserDocument, paginationData: DatePaginationPayload){
+        return paginate(TransactionLabelModel, { userId: user._id }, paginationData.pagination, { projection: { __v: 0 }, lean: true })
     }
 }

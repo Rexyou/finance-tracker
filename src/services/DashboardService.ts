@@ -1,9 +1,9 @@
-import { PaginationData } from "../variables/types";
+import { DatePaginationPayload } from "../variables/types";
 import ServiceContainer from "./ServiceContainer";
 import { UserDocument } from "../schemas/users";
 
 export class DashboardService {
-    static async getData(user: UserDocument, paginationData: PaginationData){
+    static async getData(user: UserDocument, paginationData: DatePaginationPayload){
         const [transactionsList, transactionLabelsList] = await Promise.all([
             ServiceContainer.transaction.getTransaction(user, paginationData),
             ServiceContainer.label.getTransactionLabel(user, paginationData)

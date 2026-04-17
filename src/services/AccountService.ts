@@ -1,7 +1,7 @@
 import type { ObjectId } from "mongodb";
 import { AccountModel, AccountSchema } from "../schemas/account";
 import type { UserDocument } from "../schemas/users";
-import type { AccountPayload, AccountUpdatePayload, PaginationData, VerifyAccount } from "../variables/types";
+import type { AccountPayload, AccountUpdatePayload, DatePaginationPayload, VerifyAccount } from "../variables/types";
 import { CustomError } from "../utility/CustomError";
 import { ErrorMessages } from "../variables/errorCodes";
 import { isEmpty } from "../utility/GeneralFunctions";
@@ -66,8 +66,8 @@ export class AccountService {
         return await AccountModel.findByIdAndUpdate(accountId, payload, { new: true, projection: { __v: 0 } }).lean({ getters: true })
     }
 
-    async getAccountList(user: UserDocument, paginationData: PaginationData){
-        return paginate(AccountModel, { userId: user._id }, paginationData, { projection: { __v: 0 }, lean: true })    
+    async getAccountList(user: UserDocument, paginationData: DatePaginationPayload){
+        return paginate(AccountModel, { userId: user._id }, paginationData.pagination, { projection: { __v: 0 }, lean: true })    
     }
 
     async checkAccountDetails(user: UserDocument, accountId: ObjectId){
