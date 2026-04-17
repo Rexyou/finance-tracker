@@ -95,3 +95,4 @@ src/
 ## License
 
 ISC
+testing
