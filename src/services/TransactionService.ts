@@ -327,57 +327,65 @@ export class TransactionService {
         })
     }
 
-async getTransactionsByTransactionLabel(user: UserDocument, transactionsByLabelPayload: DatePaginationPayload) {
-    const { 
-        dateFrom, 
-        dateTo, 
-        pagination: { page = 1, size = 10 } = {} 
-    } = transactionsByLabelPayload;
-    
-    const skip = (page - 1) * size;
+    async getTransactionsByTransactionLabel(user: UserDocument, transactionsByLabelPayload: DatePaginationPayload) {
+        const { 
+            dateFrom, 
+            dateTo, 
+            pagination: { page = 1, size = 10 } = {} 
+        } = transactionsByLabelPayload;
+        
+        const skip = (page - 1) * size;
 
-    const pipeline: PipelineStage[] = [
-        {
-            $match: {
-                userId: user._id,
-                createdAt: { $gte: dateFrom, $lte: dateTo }
+        const pipeline: PipelineStage[] = [
+            {
+                $match: {
+                    userId: user._id,
+                    createdAt: { $gte: dateFrom, $lte: dateTo }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'transactionlabels',
+                    localField: 'transactionLabelId',
+                    foreignField: '_id',
+                    as: 'transactionLabel'
+                }
+            },
+            { $unwind: '$transactionLabel' },
+            {
+                $group: {
+                    _id: '$transactionLabelId',
+                    labelName: { $first: '$transactionLabel.labelName' },
+                    labelColor: { $first: '$transactionLabel.labelColor' },
+                    totalAmount: {
+                        $sum: {
+                            $cond: [
+                                { $eq: ['$transactionType', TransactionType.Debit] },
+                                { $multiply: ['$amount', -1] },
+                                '$amount'                        
+                            ]
+                        }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $addFields: { totalAmount: { $toDouble: "$totalAmount" } } },
+            { $sort: { totalAmount: -1 } },
+            {
+                $facet: {
+                    metadata: [{ $group: { _id: null, totalCount: { $sum: '$count' } } }],  // ← sum all counts
+                    data: [{ $skip: skip }, { $limit: size }]
+                }
+            },
+            {
+                $project: {
+                    totalCount: { $ifNull: [{ $arrayElemAt: ["$metadata.totalCount", 0] }, 0] },
+                    data: 1
+                }
             }
-        },
-        {
-            $lookup: {
-                from: 'transactionlabels',
-                localField: 'transactionLabelId',
-                foreignField: '_id',
-                as: 'transactionLabel'
-            }
-        },
-        { $unwind: '$transactionLabel' },
-        {
-            $group: {
-                _id: '$transactionLabelId',
-                labelName: { $first: '$transactionLabel.labelName' },
-                labelColor: { $first: '$transactionLabel.labelColor' },
-                totalAmount: { $sum: '$amount' },
-                count: { $sum: 1 }
-            }
-        },
-        { $addFields: { totalAmount: { $toDouble: "$totalAmount" } } },
-        { $sort: { totalAmount: -1 } },
-        {
-            $facet: {
-                metadata: [{ $count: 'total' }],
-                data: [{ $skip: skip }, { $limit: size }]
-            }
-        },
-        {
-            $project: {
-                totalCount: { $ifNull: [{ $arrayElemAt: ["$metadata.total", 0] }, 0] },
-                data: 1
-            }
-        }
-    ];
+        ];
 
-    const [result] = await TransactionModel.aggregate(pipeline);
-    return result || { totalCount: 0, data: [] };
-}
+        const [result] = await TransactionModel.aggregate(pipeline);
+        return result || { totalCount: 0, data: [] };
+    }
 }
