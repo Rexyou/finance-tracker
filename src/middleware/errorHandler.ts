@@ -8,6 +8,8 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
   let message = "Internal Server Error";
   let details = err.stack;
 
+  console.error(err);
+
   if (err instanceof CustomError) {
     statusCode = err.statusCode;
     message = err.message;

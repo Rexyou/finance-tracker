@@ -26,8 +26,6 @@ const dateValidator = z.coerce.date()
 
 export const RegisterSchema = z.object({
     username: usernameValidator,
-    firstName: nameValidator,
-    lastName: nameValidator,
     password: passwordValidator,
     confirmPassword: passwordValidator,
     country: z.string().min(2).max(3).regex(/^[a-zA-Z0-9]+$/).nonempty(),

@@ -13,7 +13,7 @@ export class AuthService {
     private constructor() {} 
 
     static async checkUniqueValue(target: string, value: string | number){ 
-        return findOrFail(UserModel, { [target]: value }, { [target]: 1 })
+        return UserModel.findOne({ [target]: value }, { [target]: 1 }).lean();
     }
 
     static generateEncryptedPassword(password: string){
@@ -70,9 +70,9 @@ export class AuthService {
             UserModel,
             usernameFilter,
             { password: 1, _id: 1 },
-        ).catch(() => {
-            throw new CustomError(ErrorMessages.UsernameOrPasswordError)
-        });
+            {},
+            ErrorMessages.UsernameOrPasswordError
+        )
 
       const isPasswordValid = AuthService.comparePassword(user.password, password)
         if(!isPasswordValid){

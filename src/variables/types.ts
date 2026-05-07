@@ -4,8 +4,8 @@ import { PopulateOptions } from "mongoose";
 
 export type UserPayload = {
     username: string;
-    firstName: string;
-    lastName: string;
+    firstName?: string;
+    lastName?: string;
     password: string;
     country: string;
     countryCode: number;
