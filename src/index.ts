@@ -22,9 +22,18 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 
 const dbInstance = new DbConnection();
-dbInstance.connectDB();
+async function bootstrap() {
+    await dbInstance.connectDB(); // Fail fast if DB is down
+    RedisClient();                // Redis is optional, fire and forget is ok
+    app.listen(port, () => {
+        console.log(`[Server]: Running at http://localhost:${port}`);
+    });
+}
 
-RedisClient()
+bootstrap().catch((err) => {
+    console.error('[Server]: Failed to start:', err);
+    process.exit(1);
+});
 
 declare module "express-serve-static-core" {
   interface Request {
@@ -47,8 +56,3 @@ app.get("*", (req, res, next) => {
 });
 
 app.use(errorHandler)
-
-app.listen(port, () => {
-  console.log(`[Server]: Running at http://localhost:${port}`);
-});
-

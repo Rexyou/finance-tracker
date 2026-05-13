@@ -256,17 +256,10 @@ export class TransactionService {
         const { dateFrom, dateTo, pagination } = paginationData
         let filter: {
             userId: ObjectId;
-            createdAt?: { $gte?: Date; $lte?: Date }
+            createdAt: { $gte: Date; $lte: Date }
         } = {
             userId: user._id,
-        }
-
-        if(dateFrom){
-            filter = { ...filter, createdAt: { $gte: dateFrom } }
-        }
-
-        if(dateTo){
-            filter = { ...filter, createdAt: { ...filter.createdAt, $lte: dateTo } }
+            createdAt: { $gte: dateFrom, $lte: dateTo }
         }
 
         return paginate(TransactionModel, filter, pagination, { projection: { __v: 0 }, lean: true, populate: {

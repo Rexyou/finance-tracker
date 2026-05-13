@@ -5,6 +5,7 @@ import { AccountModel } from "../schemas/account";
 import { TransactionLabelModel } from "../schemas/transactionLabel";
 import { TransactionModel } from "../schemas/transaction";
 import { UserModel } from "../schemas/users";
+import { error } from "console";
 
 
 export class DbConnection {
@@ -33,6 +34,9 @@ export class DbConnection {
             AccountModel.syncIndexes(),
             TransactionLabelModel.syncIndexes(),
             TransactionModel.syncIndexes()
-        ])
+        ]).catch((error) => {
+            console.log("[Mongo]: syncIndex error:", error)
+            throw new CustomError(ErrorMessages.UnknownError)
+        })
     }
 }

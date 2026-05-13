@@ -42,12 +42,14 @@ export const verifyToken = (token: string) => {
 }
 
 export const getOrSetCache = async <T> (key: string, ttl: number, dbQuery: () => Promise<T | null>) => {
-    const getCachedData = await getCacheData(key);
-    if(isEmpty(getCachedData)){
-        return setCacheData(key, ttl, dbQuery)
+    try {
+        const getCachedData = await getCacheData(key);
+        if (!isEmpty(getCachedData)) return getCachedData;
+        return setCacheData(key, ttl, dbQuery);
+    } catch (err) {
+        console.error('[Cache]: getOrSetCache failed, falling back to DB:', err)
+        return dbQuery() // ← Graceful fallback
     }
-
-    return getCachedData
 }
 
 export const getCacheData = async <T> (key: string) => {
