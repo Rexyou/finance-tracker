@@ -17,7 +17,7 @@ export class AccountService {
     async createAccount(user: UserDocument, payload: AccountPayload){
         // Check account unique for each user
         let newPayload: { userId: ObjectId } & AccountPayload = { ...payload, userId: user._id as ObjectId }
-        const checkUniqueAccount = await AccountService.verifyUniqueAccount(newPayload);
+        const checkUniqueAccount = await AccountService.verifyUniqueAccount({ userId: user._id, type: payload.type, accountNumber: payload.accountNumber });
         if(!isEmpty(checkUniqueAccount)){
             throw new CustomError(ErrorMessages.AccountExistsError)
         }

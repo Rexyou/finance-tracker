@@ -45,7 +45,7 @@ export type AccountUpdatePayload = {
     balance?: number
 }
 
-export type VerifyAccount = Omit<AccountPayload, 'balance' | 'limit' | 'availableCredit' | 'amountUsed'> & {
+export type VerifyAccount = Pick<AccountPayload, 'type' | 'accountNumber'> & {
     userId: ObjectId;
 };
 
