@@ -78,7 +78,6 @@ export interface TransactionPayload {
 }
 
 export interface TransactionUpdatePayload {
-    accountId?: ObjectId;
     transactionLabelId?: ObjectId;
     amount?: number;
     remarks?: string

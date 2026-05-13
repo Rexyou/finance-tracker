@@ -31,6 +31,7 @@ export const ErrorMessages = {
     CreditAmountOverLimitError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "credit_amount_over_limit_error" },
     InvalidAccountFieldError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "invalid_account_field_error" },
     DeleteTransactionError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "delete_transaction_error" },
+    UserInactiveError: { code: HttpCode.FORBIDDEN, message: "user_inactive" },
 } as const
 
 export type ErrorMessage = typeof ErrorMessages[keyof typeof ErrorMessages];

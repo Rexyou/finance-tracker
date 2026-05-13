@@ -14,7 +14,7 @@ const userSchema = new Schema({
     status: {
         type: String,
         enum: Object.values(UserStatus),
-        default: UserStatus.Inactive,
+        default: UserStatus.Active,
     },
     loginAttempts: { type: Number, default: 0 },
     lastLoginAt: { type: Date }

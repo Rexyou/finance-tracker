@@ -30,7 +30,7 @@ export const generateToken = (userId: ObjectId) => {
         throw new CustomError(ErrorMessages.UnknownError);
     }
 
-    return jwt.sign({ userId }, process.env.TOKEN_SECRET)
+    return jwt.sign({ userId }, process.env.TOKEN_SECRET, { expiresIn: '7d' });
 }
 
 export const verifyToken = (token: string) => {

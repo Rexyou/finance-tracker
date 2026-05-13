@@ -43,7 +43,6 @@ export const editTransaction = async (req: Request, res: Response, next: NextFun
         // Convert string IDs to ObjectId if present
         const updatedPayload = {
             ...filteredData,
-            accountId: filteredData.accountId ? new ObjectId(filteredData.accountId) : undefined,
             transactionLabelId: filteredData.transactionLabelId ? new ObjectId(filteredData.transactionLabelId) : undefined,
         };
 

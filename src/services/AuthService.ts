@@ -5,7 +5,7 @@ import { generateToken, getOrSetCache } from "../utility/GeneralFunctions";
 import { ErrorMessages } from "../variables/errorCodes";
 import type { LoginPayload, RegisterPayload } from "../variables/types";
 import bcrypt from "bcryptjs";
-import { RedisKeyName } from "../variables/Enums";
+import { RedisKeyName, UserStatus } from "../variables/Enums";
 import { findOrFail } from "./ModelService";
 
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
     }
 
     static generateEncryptedPassword(password: string){
-        const salt =  bcrypt.genSaltSync(5)
+        const salt =  bcrypt.genSaltSync(12)
         return bcrypt.hashSync(password, salt)
     }
 
@@ -66,10 +66,10 @@ export class AuthService {
             usernameFilter = { phoneNumber: username };
         }
 
-        const user = await findOrFail<UserSchema, { _id: ObjectId; password: string }>(
+        const user = await findOrFail<UserSchema, { _id: ObjectId; password: string, status: UserStatus }>(
             UserModel,
             usernameFilter,
-            { password: 1, _id: 1 },
+            { password: 1, _id: 1, status: 1 },
             {},
             ErrorMessages.UsernameOrPasswordError
         )
@@ -77,6 +77,10 @@ export class AuthService {
       const isPasswordValid = AuthService.comparePassword(user.password, password)
         if(!isPasswordValid){
             throw new CustomError(ErrorMessages.UsernameOrPasswordError)
+        }
+
+        if(user.status !== UserStatus.Active){
+            throw new CustomError(ErrorMessages.UserInactiveError)
         }
 
         const profileData = await AuthService.getProfile(user._id)

@@ -106,7 +106,6 @@ export const CreateTransactionSchema = z.object({
 export const UpdateTransactionSchema = z.object({
   transactionId: objectIdSchema.optional(),
   transactionLabelId: objectIdSchema.optional(),
-  accountId: objectIdSchema.optional(),
   amount: z.number().min(1).optional(),
   remarks: z.string().optional()
 }).strict()
