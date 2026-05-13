@@ -43,7 +43,7 @@ app.use('/transaction', TransactionRoute)
 app.use('/dashboard', DashboardRoute)
 
 app.get("*", (req, res, next) => {
-  throw new CustomError(ErrorMessages.NotFound);
+  next(new CustomError(ErrorMessages.NotFound));
 });
 
 app.use(errorHandler)

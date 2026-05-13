@@ -14,12 +14,12 @@ export function isEmpty<PayloadType>(payload: PayloadType): payload is Exclude<P
         return true;
     }
 
-    if (typeof payload === 'object' && !(payload instanceof Date)) {
-        return Object.keys(payload).length === 0;
-    }
-
     if (Array.isArray(payload)) {
         return payload.length === 0;
+    }
+
+    if (typeof payload === 'object' && !(payload instanceof Date)) {
+        return Object.keys(payload).length === 0;
     }
 
     return false;

@@ -104,14 +104,14 @@ export const CreateTransactionSchema = z.object({
 }).strict()
 
 export const UpdateTransactionSchema = z.object({
-  transactionId: objectIdSchema.optional(),
+  transactionId: objectIdSchema,
   transactionLabelId: objectIdSchema.optional(),
   amount: z.number().min(1).optional(),
   remarks: z.string().optional()
 }).strict()
 
 export const DeleteTransactionSchema = z.object({
-  transactionId: objectIdSchema.optional(),
+  transactionId: objectIdSchema,
 }).strict()
 
 export const PaginateSchema = z.object({

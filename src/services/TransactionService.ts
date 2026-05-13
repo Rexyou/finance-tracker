@@ -53,7 +53,7 @@ export class TransactionService {
             const amountUsed = getAccountData.amountUsed
             const accountLimit = getAccountData.limit
             const accountBalance = getAccountData.balance
-            const availableCredit = getAccountData.availableCredit
+            const availableCredit = accountLimit - amountUsed
 
             if(payload.transactionType === TransactionType.Debit && payload.amount > accountBalance && getAccountData.type !== AccountType.CreditAccount){
                 throw new CustomError(ErrorMessages.BalanceNotEnoughError)
@@ -123,9 +123,9 @@ export class TransactionService {
 
             if(amountChanged){
                 if(getAccountData.type === AccountType.DebitAccount){
-                    await this.validateDebitAccountEdit(getAccountData, checkTransaction, newAmount, transactionType)
+                    this.validateDebitAccountEdit(getAccountData, checkTransaction, newAmount, transactionType)
                 } else if(getAccountData.type === AccountType.CreditAccount){
-                    await this.validateCreditAccountEdit(getAccountData, checkTransaction, newAmount, transactionType)
+                    this.validateCreditAccountEdit(getAccountData, checkTransaction, newAmount, transactionType)
                 }
             }
 
@@ -150,7 +150,7 @@ export class TransactionService {
         })
     }
 
-    private async validateDebitAccountEdit(
+    private validateDebitAccountEdit(
         accountData: { balance: number; limit: number; type: string; status: string },
         oldTransaction: { amount: number; transactionType: string },
         newAmount: number,
@@ -169,7 +169,7 @@ export class TransactionService {
         }
     }
 
-    private async validateCreditAccountEdit(
+    private validateCreditAccountEdit(
         accountData: { balance: number; limit: number; type: string; status: string; amountUsed: number; availableCredit: number },
         oldTransaction: { amount: number; transactionType: string },
         newAmount: number,

@@ -31,6 +31,7 @@ export async function Authenticate(req: Request, res: Response, next: NextFuncti
         next();
     } catch (error) {
         console.log("token invalid error: ", error)
+        if (error instanceof CustomError) throw error;
         throw new CustomError(ErrorMessages.TokenInvalidError);
     }
 }
