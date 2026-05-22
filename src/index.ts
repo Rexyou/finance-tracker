@@ -15,10 +15,12 @@ import TransactionRoute from "./routes/TransactionRoutes";
 import cors from 'cors'
 import { UserDocument } from "./schemas/users";
 import DashboardRoute from "./routes/DashboardRoutes";
+import { requestLogger } from "./middleware/Logger";
 
 const app: Express = express();
 app.use(cors())
 app.use(express.json()); 
+app.use(requestLogger)
 const port = process.env.PORT || 3000;
 
 const dbInstance = new DbConnection();
