@@ -14,7 +14,13 @@ export async function paginate<T>(
   const limit = paginationData.size && paginationData.size > 0 ? paginationData.size : DEFAULT_SIZE;
   const page = paginationData.page && paginationData.page > 0 ? paginationData.page : DEFAULT_PAGE;
   const skip = (page - 1) * limit;
-  const sort = paginationData.sort ? { ...paginationData.sort } : DEFAULT_SORT;
+  // An empty object is truthy, so `sort: {}` used to defeat DEFAULT_SORT and
+  // fall back to natural order — which reorders as documents are updated, so
+  // paging through a list duplicated and skipped rows.
+  const requestedSort = paginationData.sort;
+  const sort = requestedSort && Object.keys(requestedSort).length > 0
+    ? { ...requestedSort }
+    : DEFAULT_SORT;
 
   let query = model.find(filter, options.projection || {});
 

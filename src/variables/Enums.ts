@@ -12,7 +12,10 @@ export enum UserStatus {
 export enum AccountType {
     DebitAccount = "debitAccount", // Debit Card
     CreditAccount = "creditAccount", // Credit Card
-    FixedDeposit = "fixedDeposit",
+    // FixedDeposit removed: the balance arithmetic worked, but none of the
+    // actual FD semantics exist (no tenure, no maturity date, nothing stops an
+    // early withdrawal, no maturity notification). Add it back together with
+    // those fields, not as a bare enum member.
     Cash = "cash",
 }
 

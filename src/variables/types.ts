@@ -9,7 +9,7 @@ export type UserPayload = {
     password: string;
     country: string;
     countryCode: number;
-    phoneNumber: number;
+    phoneNumber: string;
     email: string;
     pin?: number;
     status?: string;
@@ -18,7 +18,9 @@ export type UserPayload = {
 
 export type RegisterPayload = UserPayload & { confirmPassword: string }
 
-export type LoginPayload = Pick<UserPayload, 'password'> & { username: string | number }
+// LoginSchema always produces a string; the union invited a phoneNumber branch
+// that could never be reached.
+export type LoginPayload = Pick<UserPayload, 'password'> & { username: string }
 
 export type TokenPayload = { id: ObjectId }
 
@@ -26,7 +28,7 @@ export type NonEmpty<T> = T extends null | undefined | '' | [] | Record<string, 
 
 export interface AccountPayload {
     type: AccountType;
-    accountNumber: number;
+    accountNumber?: string;
     balance?: number | undefined;
     label: string;
     availableCredit?: number | undefined;
@@ -34,16 +36,26 @@ export interface AccountPayload {
     amountUsed?: number | undefined;
 }
 
+/**
+ * User-controlled. Must stay a subset of UpdateAccountSchema.
+ *
+ * `type` is immutable after creation; `balance` and `amountUsed` are only ever
+ * moved by AccountService.applyBalanceDelta, never set directly from a request.
+ */
 export type AccountUpdatePayload = {
-    type?: AccountType;
-    accountNumber?: number;
-    limit?: number | undefined;
-    availableCredit?: number | undefined;
-    amountUsed?: number | undefined;
-    status?: AccountStatus;
     label?: string;
-    balance?: number
+    accountNumber?: string;
+    status?: AccountStatus;
+    limit?: number;
 }
+
+/** What editAccount actually hands to Mongoose — includes derived fields. */
+export type AccountUpdateDocument = AccountUpdatePayload & {
+    availableCredit?: number;
+}
+
+/** Money fields that applyBalanceDelta is allowed to move. */
+export type BalanceDeltas = Partial<Record<'balance' | 'amountUsed' | 'availableCredit', number>>;
 
 export type VerifyAccount = Pick<AccountPayload, 'type' | 'accountNumber'> & {
     userId: ObjectId;
@@ -108,8 +120,12 @@ export interface FindOrFailParams<T> {
     error: string;
 }
 
-export interface DatePaginationPayload {
+/** List endpoints whose services ignore date filtering (accounts, labels). */
+export interface PaginationPayload {
+    pagination: PaginationData
+}
+
+export type DatePaginationPayload = PaginationPayload & {
     dateFrom: Date;
     dateTo: Date;
-    pagination: PaginationData
 }

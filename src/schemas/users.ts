@@ -9,7 +9,9 @@ const userSchema = new Schema({
     pin: { type: Number },
     country: { type: String, required: true },
     countryCode: { type: Number, required: true },
-    phoneNumber: { type: Number, required: true, unique: true },
+    // String for the same reason as accountNumber: precision past 2^53 and
+    // leading zeros both matter for international numbers.
+    phoneNumber: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     status: {
         type: String,

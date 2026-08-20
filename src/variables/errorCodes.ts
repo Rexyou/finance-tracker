@@ -22,15 +22,23 @@ export const ErrorMessages = {
     AccountExistsError: { code: HttpCode.VALIDATION_ERROR, message: "account_exists" },
     AccountNotFoundError: { code: HttpCode.NOT_FOUND, message: "account_not_found" },
     AccountNotActiveError: { code: HttpCode.NOT_FOUND, message: "account_not_active" },
+    LabelNotFoundError: { code: HttpCode.NOT_FOUND, message: "label_not_found" },
+    // The unique index on { userId, labelName } has no status component, so a
+    // soft-deleted label still holds its name — and the user cannot see it in the
+    // list. Distinct from label_exists so the client can explain that.
+    LabelNameTakenByDeletedError: { code: HttpCode.VALIDATION_ERROR, message: "label_name_taken_by_deleted" },
     LabelExistsError: { code: HttpCode.VALIDATION_ERROR, message: "label_exists" },
     TransactionCreationError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "transaction_create_error" },
-    TransactionUpdateError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "transaction_update_error" },
-    BalanceNotEnoughError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "balance_not_enough_error" },
-    LimitNotEnoughError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "limit_not_enough_error" },
-    CreditAccountLimitError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "credit_account_limit_error" },
-    CreditAmountOverLimitError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "credit_amount_over_limit_error" },
-    InvalidAccountFieldError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "invalid_account_field_error" },
-    DeleteTransactionError: { code: HttpCode.INTERNAL_SERVER_ERROR, message: "delete_transaction_error" },
+    // The row vanished mid-request — a lost race, not a server fault.
+    TransactionUpdateError: { code: HttpCode.NOT_FOUND, message: "transaction_update_error" },
+    DeleteTransactionError: { code: HttpCode.NOT_FOUND, message: "delete_transaction_error" },
+    // Business-rule violations: the client asked for something the account state
+    // does not allow. 422 keeps them out of server-error alerting.
+    BalanceNotEnoughError: { code: HttpCode.VALIDATION_ERROR, message: "balance_not_enough_error" },
+    LimitNotEnoughError: { code: HttpCode.VALIDATION_ERROR, message: "limit_not_enough_error" },
+    CreditAccountLimitError: { code: HttpCode.VALIDATION_ERROR, message: "credit_account_limit_error" },
+    CreditAmountOverLimitError: { code: HttpCode.VALIDATION_ERROR, message: "credit_amount_over_limit_error" },
+    InvalidAccountFieldError: { code: HttpCode.VALIDATION_ERROR, message: "invalid_account_field_error" },
     UserInactiveError: { code: HttpCode.FORBIDDEN, message: "user_inactive" },
 } as const
 

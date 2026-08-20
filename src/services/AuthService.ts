@@ -1,7 +1,7 @@
 import type { ObjectId } from "mongodb";
 import { type UserDocument, UserModel, UserSchema } from "../schemas/users";
 import { CustomError } from "../utility/CustomError";
-import { generateToken, getOrSetCache } from "../utility/GeneralFunctions";
+import { generateToken, getOrSetCache, isDuplicateKey } from "../utility/GeneralFunctions";
 import { ErrorMessages } from "../variables/errorCodes";
 import type { LoginPayload, RegisterPayload } from "../variables/types";
 import bcrypt from "bcryptjs";
@@ -50,7 +50,20 @@ export class AuthService {
         const { confirmPassword, ...newPayload } = payload        
         newPayload.password = generatedPassword
 
-        const result = await UserModel.create(newPayload)
+        // The three checks above are read-then-write with no transaction, so a
+        // concurrent registration still reaches the unique indexes.
+        let result
+        try {
+            result = await UserModel.create(newPayload)
+        } catch (err) {
+            if(!isDuplicateKey(err)) throw err
+            const field = Object.keys((err as { keyPattern?: Record<string, unknown> }).keyPattern ?? {})[0]
+            throw new CustomError(
+                field === 'email' ? ErrorMessages.EmailExistsError
+                : field === 'phoneNumber' ? ErrorMessages.PhoneNumberExistsError
+                : ErrorMessages.UsernameExistsError
+            )
+        }
         const profileData = await AuthService.getProfile(result._id)
 
         return { token: generateToken(result._id), ...profileData }
@@ -59,12 +72,9 @@ export class AuthService {
     static async login(payload: LoginPayload){
         const { username, password } = payload
 
-        let usernameFilter: { $or: [{ username: string }, { email: string }] } | { phoneNumber: number };
-        if (typeof username === 'string') {
-            usernameFilter = { $or: [{ username: username }, { email: username }] };
-        } else {
-            usernameFilter = { phoneNumber: username };
-        }
+        // username / email / phoneNumber are all strings now, so a single $or covers
+        // every login form. The old typeof check made the phone branch unreachable.
+        const usernameFilter = { $or: [{ username }, { email: username }, { phoneNumber: username }] };
 
         const user = await findOrFail<UserSchema, { _id: ObjectId; password: string, status: UserStatus }>(
             UserModel,

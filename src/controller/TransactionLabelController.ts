@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { validateParameter } from "../utility/Validation";
-import { CreateTransactionLabelSchema, UpdateTransactionLabelSchema } from "../variables/ValidationSchemas";
+import { CreateTransactionLabelSchema, PaginationOnlySchema, UpdateTransactionLabelSchema } from "../variables/ValidationSchemas";
 import { HttpCode } from "../variables/errorCodes";
 import { ObjectId } from "mongodb";
 import ServiceContainer from "../services/ServiceContainer";
@@ -18,7 +18,8 @@ export const createTransactionLabel = async (req: Request, res: Response, next: 
 
 export const getTransactionLabel = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const result = await ServiceContainer.label.getTransactionLabel(req.userData, req.body)
+        const filterData = validateParameter(req, PaginationOnlySchema)
+        const result = await ServiceContainer.label.getTransactionLabel(req.userData, filterData)
         res.json(result);
         return
     } catch (error) {
